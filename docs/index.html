@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GoldTo · 群体智能预测引擎</title>
+<meta name="description" content="基于多智能体技术的新一代 AI 预测引擎，预测黄金、石油等价格走势">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#04070f;--bg1:#080d1a;--bg2:#0c1225;--bg3:#101830;--bg4:#141e38;
+  --gold:#c9a84c;--gold2:#f0c040;--gold3:#ffd97a;--gold-dim:#4a3810;--gold-glow:rgba(240,192,64,.15);
+  --cyan:#3af0d0;--cyan2:#60fff0;--cyan-dim:#0d4035;
+  --red:#e05060;--green:#3dc87a;--purple:#9070e0;
+  --text:#c8d4e8;--text-dim:#506080;--text-bright:#eef4ff;
+  --border:#1a2840;--border2:#243560;
+  --ff-d:'Rajdhani',sans-serif;--ff-b:'Noto Sans SC',sans-serif;--ff-m:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg0);color:var(--text);font-family:var(--ff-b);font-size:14px;overflow-x:hidden}
+
+/* scanlines */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.07) 3px,rgba(0,0,0,.07) 4px)}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(4,7,15,.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--gold-dim);
+  display:flex;align-items:center;padding:0 40px;height:56px;gap:32px}
+.nav-logo{font-family:var(--ff-d);font-size:24px;font-weight:700;
+  color:var(--gold2);letter-spacing:5px;text-shadow:0 0 24px rgba(240,192,64,.4)}
+.nav-logo span{color:var(--cyan)}
+.nav-links{display:flex;gap:28px;margin-left:auto}
+.nav-links a{font-family:var(--ff-d);font-size:13px;font-weight:600;letter-spacing:2px;
+  color:var(--text-dim);text-decoration:none;text-transform:uppercase;transition:.2s}
+.nav-links a:hover{color:var(--gold)}
+.nav-cta{padding:7px 20px;border:1px solid var(--gold-dim);border-radius:3px;
+  font-family:var(--ff-d);font-size:13px;font-weight:600;letter-spacing:2px;
+  color:var(--gold);text-decoration:none;text-transform:uppercase;transition:.2s;background:var(--gold-glow)}
+.nav-cta:hover{border-color:var(--gold);background:rgba(240,192,64,.2)}
+
+/* ── HERO ── */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;padding:80px 40px 60px;text-align:center;overflow:hidden}
+.hero-grid{position:absolute;inset:0;opacity:.12;
+  background-image:
+    linear-gradient(var(--border2) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border2) 1px,transparent 1px);
+  background-size:60px 60px}
+.hero-glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);
+  width:700px;height:400px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(201,168,76,.08) 0%,transparent 70%);
+  pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;
+  padding:5px 16px;border:1px solid var(--gold-dim);border-radius:2px;
+  font-family:var(--ff-m);font-size:11px;color:var(--gold);letter-spacing:2px;
+  margin-bottom:28px;background:var(--gold-glow)}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(61,200,122,.4)}50%{opacity:.6;box-shadow:0 0 0 4px rgba(61,200,122,0)}}
+h1{font-family:var(--ff-d);font-size:clamp(42px,7vw,80px);font-weight:700;
+  letter-spacing:6px;line-height:1.1;text-transform:uppercase;
+  background:linear-gradient(135deg,var(--gold3) 0%,var(--gold) 40%,var(--cyan) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:12px}
+.hero-sub{font-family:var(--ff-d);font-size:22px;font-weight:500;letter-spacing:4px;
+  color:var(--text-dim);text-transform:uppercase;margin-bottom:28px}
+.hero-desc{max-width:620px;font-size:15px;line-height:1.8;color:var(--text);margin-bottom:44px}
+.hero-desc strong{color:var(--gold2)}
+.hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn-primary{padding:13px 32px;background:linear-gradient(135deg,#4a3810,var(--gold));
+  border:none;border-radius:3px;font-family:var(--ff-d);font-size:16px;font-weight:700;
+  letter-spacing:3px;color:#040608;text-transform:uppercase;text-decoration:none;cursor:pointer;
+  transition:.25s;box-shadow:0 4px 20px rgba(201,168,76,.25)}
+.btn-primary:hover{filter:brightness(1.2);transform:translateY(-2px);box-shadow:0 6px 30px rgba(201,168,76,.4)}
+.btn-ghost{padding:13px 32px;background:transparent;border:1px solid var(--border2);
+  border-radius:3px;font-family:var(--ff-d);font-size:16px;font-weight:600;
+  letter-spacing:3px;color:var(--text);text-transform:uppercase;text-decoration:none;cursor:pointer;
+  transition:.25s}
+.btn-ghost:hover{border-color:var(--cyan-dim);color:var(--cyan);background:rgba(58,240,208,.05)}
+.hero-stats{display:flex;gap:48px;margin-top:64px;padding-top:40px;border-top:1px solid var(--border)}
+.stat{text-align:center}
+.stat-n{font-family:var(--ff-d);font-size:36px;font-weight:700;color:var(--gold2);letter-spacing:2px}
+.stat-l{font-family:var(--ff-m);font-size:10px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+
+/* ── DEMO TERMINAL ── */
+#demo{padding:100px 40px;max-width:1100px;margin:0 auto}
+.section-label{font-family:var(--ff-m);font-size:11px;letter-spacing:3px;
+  color:var(--gold);text-transform:uppercase;margin-bottom:12px}
+.section-title{font-family:var(--ff-d);font-size:36px;font-weight:700;
+  letter-spacing:3px;color:var(--text-bright);text-transform:uppercase;margin-bottom:8px}
+.section-desc{color:var(--text-dim);font-size:14px;line-height:1.7;max-width:550px;margin-bottom:48px}
+
+.terminal-wrap{border:1px solid var(--border2);border-radius:6px;overflow:hidden;background:var(--bg1)}
+.terminal-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;
+  background:var(--bg2);border-bottom:1px solid var(--border)}
+.tbar-dot{width:12px;height:12px;border-radius:50%}
+.tbar-title{font-family:var(--ff-m);font-size:11px;color:var(--text-dim);
+  letter-spacing:2px;margin-left:8px}
+.terminal-body{display:grid;grid-template-columns:1fr 1fr;min-height:460px}
+.t-left{padding:24px;border-right:1px solid var(--border)}
+.t-right{padding:24px;display:flex;flex-direction:column;gap:16px}
+
+/* sim feed */
+.sim-feed{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:8px}
+.sim-card{border:1px solid var(--border);border-radius:4px;padding:10px 12px;
+  background:var(--bg2);animation:slideUp .3s ease;opacity:0;animation-fill-mode:forwards}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.sc-round{font-family:var(--ff-m);font-size:9px;color:var(--gold);
+  background:var(--gold-dim);padding:2px 7px;border-radius:2px;display:inline-block;margin-bottom:6px}
+.sc-event{font-size:12px;color:var(--text-bright);line-height:1.5;margin-bottom:8px}
+.sc-reaction{font-size:11px;color:var(--text-dim);padding:5px 8px;
+  background:var(--bg0);border-radius:3px;margin-bottom:4px;line-height:1.4}
+.sc-reaction strong{color:var(--text)}
+.sc-sentiment{display:inline-block;font-family:var(--ff-m);font-size:9px;font-weight:600;
+  padding:1px 5px;border-radius:2px;margin-left:4px}
+.s-bull{background:rgba(61,200,122,.2);color:var(--green)}
+.s-bear{background:rgba(224,80,96,.2);color:var(--red)}
+.s-neut{background:rgba(80,96,128,.2);color:var(--text-dim)}
+.emergence{font-size:11px;color:var(--cyan);border-left:2px solid var(--cyan-dim);
+  padding:4px 8px;background:rgba(58,240,208,.04);margin-top:6px;border-radius:0 3px 3px 0}
+
+/* sentiment bar */
+.sent-wrap{display:flex;height:20px;border-radius:3px;overflow:hidden;gap:2px}
+.sb{display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-family:var(--ff-m);font-weight:600;transition:width .7s ease;min-width:0}
+.sb.bull{background:rgba(61,200,122,.25);color:var(--green)}
+.sb.bear{background:rgba(224,80,96,.25);color:var(--red)}
+.sb.neut{background:rgba(80,96,128,.2);color:var(--text-dim)}
+
+/* agents list */
+.agents-grid{display:flex;flex-direction:column;gap:6px}
+.agent-row{display:flex;align-items:center;gap:10px;padding:7px 10px;
+  border:1px solid var(--border);border-radius:3px;background:var(--bg2);transition:.2s}
+.agent-row:hover{border-color:var(--gold-dim);background:var(--bg3)}
+.agent-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.agent-name{font-size:12px;color:var(--text-bright);flex:1;font-weight:500}
+.agent-role{font-size:10px;color:var(--text-dim);font-family:var(--ff-m)}
+.inf-bar{width:50px;height:3px;background:var(--bg0);border-radius:1px;flex-shrink:0}
+.inf-fill{height:100%;border-radius:1px;background:var(--gold)}
+
+/* progress */
+.prog-wrap{background:var(--bg0);border:1px solid var(--border);border-radius:2px;
+  height:6px;overflow:hidden;margin:6px 0}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));
+  transition:width .5s;box-shadow:0 0 8px var(--gold);border-radius:2px}
+.meta-row{display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;border-bottom:1px solid rgba(26,40,64,.5)}
+.meta-key{font-family:var(--ff-m);font-size:10px;color:var(--text-dim);letter-spacing:1px}
+.meta-val{font-size:11px;color:var(--text-bright);font-weight:500}
+.status-chip{display:flex;align-items:center;gap:6px;font-family:var(--ff-m);
+  font-size:10px;letter-spacing:1px;color:var(--text-dim)}
+.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse .8s infinite}
+.chip-dot.sim{background:var(--gold)}
+.chip-dot.done{background:var(--green);animation:none}
+
+/* ── FEATURES ── */
+#features{padding:100px 40px;background:var(--bg1)}
+.feat-grid{max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:48px}
+.feat-card{border:1px solid var(--border);border-radius:6px;padding:28px;
+  background:var(--bg2);position:relative;overflow:hidden;transition:.3s}
+.feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);opacity:0;transition:.3s}
+.feat-card:hover::before{opacity:1}
+.feat-card:hover{border-color:var(--gold-dim);transform:translateY(-3px)}
+.feat-icon{width:44px;height:44px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:18px;font-size:22px}
+.feat-icon.gold{background:var(--gold-glow);border:1px solid var(--gold-dim)}
+.feat-icon.cyan{background:rgba(58,240,208,.08);border:1px solid var(--cyan-dim)}
+.feat-icon.purple{background:rgba(144,112,224,.08);border:1px solid rgba(144,112,224,.3)}
+.feat-icon.green{background:rgba(61,200,122,.08);border:1px solid rgba(61,200,122,.3)}
+.feat-title{font-family:var(--ff-d);font-size:18px;font-weight:700;
+  letter-spacing:2px;color:var(--text-bright);margin-bottom:10px;text-transform:uppercase}
+.feat-desc{font-size:13px;color:var(--text-dim);line-height:1.7}
+.feat-tag{display:inline-block;margin-top:14px;font-family:var(--ff-m);font-size:9px;
+  padding:3px 8px;border-radius:2px;letter-spacing:1px}
+.tag-gold{background:var(--gold-glow);color:var(--gold);border:1px solid var(--gold-dim)}
+.tag-cyan{background:rgba(58,240,208,.07);color:var(--cyan);border:1px solid var(--cyan-dim)}
+
+/* ── PIPELINE ── */
+#pipeline{padding:100px 40px;max-width:1100px;margin:0 auto}
+.pipe-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:48px;position:relative}
+.pipe-steps::after{content:'';position:absolute;top:28px;left:10%;right:10%;
+  height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),var(--gold),var(--gold-dim),transparent);z-index:0}
+.pipe-step{text-align:center;position:relative;z-index:1;padding:0 8px}
+.step-num{width:56px;height:56px;border-radius:50%;
+  background:var(--bg1);border:1px solid var(--gold-dim);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 16px;
+  font-family:var(--ff-d);font-size:20px;font-weight:700;color:var(--gold);
+  box-shadow:0 0 20px rgba(201,168,76,.15)}
+.step-title{font-family:var(--ff-d);font-size:14px;font-weight:600;
+  letter-spacing:1px;color:var(--text-bright);margin-bottom:6px;text-transform:uppercase}
+.step-desc{font-size:11px;color:var(--text-dim);line-height:1.6}
+
+/* ── AGENTS ── */
+#agents-section{padding:100px 40px;background:var(--bg1)}
+.agents-showcase{max-width:1100px;margin:48px auto 0;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.archetype-card{border:1px solid var(--border);border-radius:6px;padding:18px;
+  background:var(--bg2);transition:.25s;cursor:default}
+.archetype-card:hover{border-color:var(--gold-dim);background:var(--bg3)}
+.arch-inf{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.arch-name{font-family:var(--ff-d);font-size:15px;font-weight:600;color:var(--text-bright);letter-spacing:1px}
+.arch-pct{font-family:var(--ff-m);font-size:11px;color:var(--gold)}
+.arch-bar{height:3px;background:var(--bg0);border-radius:1px;margin-bottom:12px}
+.arch-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));border-radius:1px;box-shadow:0 0 6px var(--gold)}
+.arch-traits{display:flex;flex-wrap:wrap;gap:5px}
+.trait{font-family:var(--ff-m);font-size:9px;padding:2px 7px;border-radius:2px;
+  background:var(--bg0);color:var(--text-dim);border:1px solid var(--border)}
+
+/* ── QUICKSTART ── */
+#quickstart{padding:100px 40px;max-width:900px;margin:0 auto}
+.code-block{background:var(--bg1);border:1px solid var(--border2);border-radius:6px;
+  overflow:hidden;margin-bottom:24px}
+.code-header{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.code-label{font-family:var(--ff-m);font-size:10px;letter-spacing:2px;
+  color:var(--text-dim);text-transform:uppercase}
+.code-body{padding:20px;font-family:var(--ff-m);font-size:13px;line-height:2;overflow-x:auto}
+.code-body .cmd{color:var(--gold2)}
+.code-body .cmt{color:var(--text-dim)}
+.code-body .str{color:var(--cyan)}
+.code-body .kw{color:var(--purple)}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:40px;text-align:center;
+  background:var(--bg1)}
+.footer-logo{font-family:var(--ff-d);font-size:28px;font-weight:700;
+  color:var(--gold2);letter-spacing:5px;margin-bottom:12px}
+.footer-logo span{color:var(--cyan)}
+.footer-links{display:flex;gap:28px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.footer-links a{font-family:var(--ff-m);font-size:11px;letter-spacing:2px;
+  color:var(--text-dim);text-decoration:none;transition:.2s}
+.footer-links a:hover{color:var(--gold)}
+.footer-copy{font-family:var(--ff-m);font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-top:16px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  nav{padding:0 20px;gap:16px}
+  .nav-links{display:none}
+  #hero{padding:80px 20px 40px}
+  h1{font-size:36px;letter-spacing:3px}
+  .hero-stats{gap:24px;flex-wrap:wrap;justify-content:center}
+  .terminal-body{grid-template-columns:1fr}
+  .pipe-steps{grid-template-columns:1fr;gap:16px}
+  .pipe-steps::after{display:none}
+  .agents-showcase{grid-template-columns:repeat(2,1fr)}
+  #demo,#features,#pipeline,#agents-section,#quickstart{padding:60px 20px}
+  .feat-grid{grid-template-columns:1fr}
+}
+
+/* ── ANIMATED BG PARTICLES ── */
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.particle{position:absolute;border-radius:50%;animation:float linear infinite;opacity:0}
+@keyframes float{
+  0%{transform:translateY(100vh) scale(0);opacity:0}
+  10%{opacity:1}
+  90%{opacity:.3}
+  100%{transform:translateY(-20px) scale(1);opacity:0}
+}
+</style>
+</head>
+<body>
+
+<div id="particles"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">GOLD<span>To</span></div>
+  <div class="nav-links">
+    <a href="#demo">演示</a>
+    <a href="#features">功能</a>
+    <a href="#pipeline">架构</a>
+    <a href="#quickstart">快速开始</a>
+    <a href="https://github.com/kemomi/GoldTo" class="nav-cta" target="_blank">GitHub ↗</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-badge">
+    <span class="chip-dot done"></span>
+    开源 · 群体智能 · 无 API Key 可用
+  </div>
+
+  <h1>GoldTo</h1>
+  <div class="hero-sub">Swarm Intelligence Prediction Engine</div>
+
+  <p class="hero-desc">
+    基于多智能体技术的新一代 AI 预测引擎。上传<strong>种子材料</strong>，
+    系统自动构建知识图谱，生成数十个具备独立人格与记忆的智能体，
+    在数字沙盘中自由博弈——<strong>让预测万物成为可能</strong>。
+  </p>
+
+  <div class="hero-btns">
+    <a href="#demo" class="btn-primary">▶ 查看演示</a>
+    <a href="https://github.com/kemomi/GoldTo" class="btn-ghost" target="_blank">GitHub 仓库</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-n" id="cnt-agents">0</div>
+      <div class="stat-l">智能体原型</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" id="cnt-rounds">0</div>
+      <div class="stat-l">最大模拟轮次</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" id="cnt-pipeline">0</div>
+      <div class="stat-l">Pipeline 阶段</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">∞</div>
+      <div class="stat-l">预测目标类型</div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE DEMO -->
+<section id="demo">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-label">// interactive demo</div>
+    <div class="section-title">实时推演沙盘</div>
+    <p class="section-desc">以下为完整的群体智能仿真过程展示，纯前端模拟，无需后端。</p>
+
+    <div class="terminal-wrap">
+      <div class="terminal-bar">
+        <div class="tbar-dot" style="background:#ff5f57"></div>
+        <div class="tbar-dot" style="background:#febc2e"></div>
+        <div class="tbar-dot" style="background:#28c840"></div>
+        <div class="tbar-title">GoldTo · SIMULATION TERMINAL · DEMO</div>
+        <div class="status-chip" style="margin-left:auto" id="status-chip">
+          <div class="chip-dot sim" id="chip-dot"></div>
+          <span id="chip-text">IDLE</span>
+        </div>
+      </div>
+
+      <div class="terminal-body">
+        <!-- LEFT: SETUP + AGENTS -->
+        <div class="t-left">
+          <!-- config -->
+          <div style="margin-bottom:18px">
+            <div class="section-label" style="font-size:10px;margin-bottom:8px">// 仿真配置</div>
+            <div style="border:1px solid var(--border);border-radius:4px;padding:10px;background:var(--bg0);
+              font-family:var(--ff-m);font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.9">
+              <span style="color:var(--gold)">SEED</span> =
+              <span style="color:var(--cyan)">"美联储暗示降息，黄金ETF净流入创年高..."</span><br>
+              <span style="color:var(--gold)">TARGET</span> =
+              <span style="color:var(--cyan)">"预测6周国际黄金价格走势"</span><br>
+              <span style="color:var(--gold)">AGENTS</span> = <span style="color:#f0c040">12</span> &nbsp;
+              <span style="color:var(--gold)">ROUNDS</span> = <span style="color:#f0c040">8</span>
+            </div>
+            <button onclick="startDemo()" id="start-btn"
+              style="width:100%;padding:10px;border:none;border-radius:3px;cursor:pointer;
+              background:linear-gradient(135deg,#4a3810,var(--gold));
+              font-family:var(--ff-d);font-size:14px;font-weight:700;letter-spacing:2px;
+              color:#040608;text-transform:uppercase;transition:.2s">
+              ⚡ 启动仿真
+            </button>
+          </div>
+
+          <!-- meta -->
+          <div style="margin-bottom:18px">
+            <div class="meta-row">
+              <span class="meta-key">进度</span>
+              <span class="meta-val" id="prog-pct">0%</span>
+            </div>
+            <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+            <div class="meta-row"><span class="meta-key">已完成轮次</span><span class="meta-val" id="m-rounds">— / 8</span></div>
+            <div class="meta-row"><span class="meta-key">智能体数量</span><span class="meta-val" id="m-agents">—</span></div>
+            <div class="meta-row"><span class="meta-key">图谱节点</span><span class="meta-val" id="m-nodes">—</span></div>
+            <div class="meta-row"><span class="meta-key">知识图谱</span><span class="meta-val" id="m-kg">构建中…</span></div>
+          </div>
+
+          <!-- sentiment -->
+          <div>
+            <div class="section-label" style="font-size:10px;margin-bottom:8px">// 情绪实况</div>
+            <div class="sent-wrap" id="sent-bar">
+              <div class="sb bull" style="width:33%"></div>
+              <div class="sb neut" style="width:34%"></div>
+              <div class="sb bear" style="width:33%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-family:var(--ff-m);
+              font-size:9px;margin-top:5px;color:var(--text-dim)">
+              <span id="p-bull">↑ —%</span>
+              <span id="p-neut">— —%</span>
+              <span id="p-bear">↓ —%</span>
+            </div>
+          </div>
+
+          <!-- agents -->
+          <div style="margin-top:18px">
+            <div class="section-label" style="font-size:10px;margin-bottom:8px">// 智能体群组</div>
+            <div class="agents-grid" id="agents-list">
+              <div style="font-family:var(--ff-m);font-size:10px;color:var(--text-dim);text-align:center;padding:16px">
+                仿真启动后显示
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: ROUND FEED -->
+        <div class="t-right" style="background:var(--bg0)">
+          <div class="section-label" style="font-size:10px;flex-shrink:0">// 实时推演流</div>
+          <div class="sim-feed" id="sim-feed">
+            <div style="font-family:var(--ff-m);font-size:11px;color:var(--text-dim);
+              text-align:center;padding:60px 0;flex:1">
+              配置参数后点击「启动仿真」
+            </div>
+          </div>
+
+          <!-- report placeholder -->
+          <div id="report-area" style="display:none;border:1px solid var(--gold-dim);
+            border-radius:4px;padding:16px;background:var(--gold-glow);flex-shrink:0">
+            <div style="font-family:var(--ff-d);font-size:14px;font-weight:700;
+              color:var(--gold2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">
+              📊 预测报告已生成
+            </div>
+            <div style="font-size:12px;color:var(--text);line-height:1.7" id="report-preview"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-label">// core features</div>
+    <div class="section-title">核心能力</div>
+    <p class="section-desc">从种子材料到预测报告，五步自动化 Pipeline，全程 AI 驱动。</p>
+
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon gold">🧠</div>
+        <div class="feat-title">GraphRAG 图谱</div>
+        <p class="feat-desc">自动从种子文本中抽取实体与关系，构建 NetworkX 知识图谱，为智能体提供结构化上下文。</p>
+        <span class="feat-tag tag-gold">实体抽取 · 关系推理</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon cyan">👥</div>
+        <div class="feat-title">人格化智能体</div>
+        <p class="feat-desc">8 种原型角色（央行官员 95% 影响力 → 散户 30%），每个智能体有独立背景、记忆与行为逻辑。</p>
+        <span class="feat-tag tag-cyan">影响力加权 · 社会传染</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon purple">⚡</div>
+        <div class="feat-title">群体涌现检测</div>
+        <p class="feat-desc">实时监测羊群效应、信息级联、情绪反转等涌现现象，自动标注关键拐点。</p>
+        <span class="feat-tag tag-gold">涌现 · 反身性</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon green">📋</div>
+        <div class="feat-title">ReportAgent</div>
+        <p class="feat-desc">拥有全知视角的报告智能体，输出含情景概率表、风险因素、操作建议的完整预测报告。</p>
+        <span class="feat-tag tag-cyan">置信度 · 情景矩阵</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon gold">💬</div>
+        <div class="feat-title">深度对话</div>
+        <p class="feat-desc">与仿真世界中任意智能体展开对话，角色完全代入；或向 ReportAgent 追问预测细节。</p>
+        <span class="feat-tag tag-gold">角色对话 · 问答</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon cyan">🔌</div>
+        <div class="feat-title">Mock 离线模式</div>
+        <p class="feat-desc">不填写 API Key 自动启用，完整体验所有功能。支持阿里百炼、OpenAI、DeepSeek 等任意兼容接口。</p>
+        <span class="feat-tag tag-cyan">零配置启动</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section id="pipeline">
+  <div class="section-label">// how it works</div>
+  <div class="section-title">五阶段 Pipeline</div>
+  <p class="section-desc">从原始材料到最终预测，全自动端到端执行。</p>
+
+  <div class="pipe-steps">
+    <div class="pipe-step">
+      <div class="step-num">1</div>
+      <div class="step-title">图谱构建</div>
+      <div class="step-desc">GraphRAG 抽取实体·关系，注入个体记忆</div>
+    </div>
+    <div class="pipe-step">
+      <div class="step-num">2</div>
+      <div class="step-title">环境搭建</div>
+      <div class="step-desc">人设生成·关系网络·仿真参数注入</div>
+    </div>
+    <div class="pipe-step">
+      <div class="step-num">3</div>
+      <div class="step-title">多轮仿真</div>
+      <div class="step-desc">智能体感知·反应·情绪传染·涌现检测</div>
+    </div>
+    <div class="pipe-step">
+      <div class="step-num">4</div>
+      <div class="step-title">报告生成</div>
+      <div class="step-desc">ReportAgent 综合数据输出预测报告</div>
+    </div>
+    <div class="pipe-step">
+      <div class="step-num">5</div>
+      <div class="step-title">深度互动</div>
+      <div class="step-desc">与任意智能体·ReportAgent 展开对话</div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENTS -->
+<section id="agents-section">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-label">// agent archetypes</div>
+    <div class="section-title">8 种智能体原型</div>
+    <p class="section-desc">按影响力加权分配，模拟真实市场参与者的行为逻辑。</p>
+
+    <div class="agents-showcase" id="archetypes-grid"></div>
+  </div>
+</section>
+
+<!-- QUICKSTART -->
+<section id="quickstart">
+  <div class="section-label">// quick start</div>
+  <div class="section-title">快速开始</div>
+  <p class="section-desc">三步完成部署，无需任何 API Key 即可完整体验。</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label">1. 克隆与安装</span>
+      <span style="font-family:var(--ff-m);font-size:10px;color:var(--text-dim)">bash</span>
+    </div>
+    <div class="code-body">
+      <span class="cmd">git clone</span> <span class="str">https://github.com/kemomi/GoldTo.git</span><br>
+      <span class="cmd">cd</span> GoldTo<br>
+      <span class="cmd">bash</span> setup.sh &nbsp;<span class="cmt"># 一键安装所有依赖</span>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label">2. 配置（可选）</span>
+      <span style="font-family:var(--ff-m);font-size:10px;color:var(--text-dim)">.env</span>
+    </div>
+    <div class="code-body">
+      <span class="cmt"># 留空 → 自动 Mock 模式，完整功能无需 API Key</span><br>
+      <span class="kw">LLM_API_KEY</span>=<span class="str">your_key_here</span> &nbsp;<span class="cmt"># 可选</span><br>
+      <span class="kw">LLM_BASE_URL</span>=<span class="str">https://dashscope.aliyuncs.com/compatible-mode/v1</span><br>
+      <span class="kw">ZEP_API_KEY</span>=  &nbsp;<span class="cmt"># 可选，用于持久化记忆</span>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label">3. 启动</span>
+      <span style="font-family:var(--ff-m);font-size:10px;color:var(--text-dim)">bash</span>
+    </div>
+    <div class="code-body">
+      <span class="cmd">bash</span> dev.sh<br>
+      <span class="cmt"># 前端 → http://localhost:3000</span><br>
+      <span class="cmt"># 后端 → http://localhost:5001 (API docs: /docs)</span>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:16px;margin-top:32px;flex-wrap:wrap">
+    <a href="https://github.com/kemomi/GoldTo" class="btn-primary" target="_blank">⭐ GitHub 仓库</a>
+    <a href="https://github.com/kemomi/GoldTo/issues" class="btn-ghost" target="_blank">提交 Issue</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">GOLD<span>To</span></div>
+  <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px">
+    简洁通用的群体智能引擎，预测黄金、石油等价格走势
+  </p>
+  <div class="footer-links">
+    <a href="https://github.com/kemomi/GoldTo" target="_blank">GitHub</a>
+    <a href="https://github.com/kemomi/GoldTo/blob/main/README.md" target="_blank">文档</a>
+    <a href="https://github.com/kemomi/GoldTo/issues" target="_blank">反馈</a>
+    <a href="https://github.com/kemomi/GoldTo/tree/fix" target="_blank">Fix 分支</a>
+  </div>
+  <div class="footer-copy">MIT License · 2025 GoldTo Contributors</div>
+</footer>
+
+<script>
+/* ── PARTICLES ── */
+(function(){
+  const c=document.getElementById('particles');
+  for(let i=0;i<18;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    const s=Math.random()*3+1;
+    const col=Math.random()<.6?'rgba(201,168,76,':'rgba(58,240,208,';
+    p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;
+      background:${col+(.3+Math.random()*.4)});
+      animation-duration:${8+Math.random()*12}s;
+      animation-delay:${Math.random()*8}s`;
+    c.appendChild(p);
+  }
+})();
+
+/* ── COUNTER ANIMATION ── */
+function animateCount(el, target, suffix=''){
+  let cur=0; const step=target/60;
+  const t=setInterval(()=>{
+    cur=Math.min(cur+step,target);
+    el.textContent=Math.floor(cur)+suffix;
+    if(cur>=target)clearInterval(t);
+  },25);
+}
+setTimeout(()=>{
+  animateCount(document.getElementById('cnt-agents'),8);
+  animateCount(document.getElementById('cnt-rounds'),40);
+  animateCount(document.getElementById('cnt-pipeline'),5);
+},500);
+
+/* ── ARCHETYPES ── */
+const ARCHETYPES=[
+  {name:'央行官员',inf:95,traits:['稳定优先','货币工具','信号博弈'],col:'#f0c040'},
+  {name:'政策制定者',inf:90,traits:['保守','系统性思维','信息滞后'],col:'#f0c040'},
+  {name:'机构投资者',inf:85,traits:['理性','数据驱动','长线思维'],col:'#3af0d0'},
+  {name:'对冲基金',inf:80,traits:['逆向思维','高杠杆','短期博弈'],col:'#9070e0'},
+  {name:'地缘分析师',inf:65,traits:['风险感知','历史类比'],col:'#3dc87a'},
+  {name:'媒体分析师',inf:60,traits:['叙事驱动','放大效应'],col:'#3af0d0'},
+  {name:'商品交易员',inf:55,traits:['技术分析','供需敏感'],col:'#9070e0'},
+  {name:'散户交易者',inf:30,traits:['情绪化','跟风','贪婪/恐惧'],col:'#e05060'},
+];
+const ag=document.getElementById('archetypes-grid');
+ARCHETYPES.forEach(a=>{
+  ag.innerHTML+=`<div class="archetype-card">
+    <div class="arch-inf">
+      <div class="arch-name">${a.name}</div>
+      <div class="arch-pct" style="color:${a.col}">${a.inf}%</div>
+    </div>
+    <div class="arch-bar"><div class="arch-bar-fill" style="width:${a.inf}%;background:linear-gradient(90deg,${a.col}44,${a.col})"></div></div>
+    <div class="arch-traits">${a.traits.map(t=>`<span class="trait">${t}</span>`).join('')}</div>
+  </div>`;
+});
+
+/* ── DEMO SIMULATION ── */
+const EVENTS=[
+  '美联储官员发表鹰派讲话，加息预期升温，金价短线承压回调',
+  '中东地缘冲突升级，原油供应受威胁，避险情绪骤升',
+  '全球央行Q3净购金量158吨，创近年单季新高，结构性需求强劲',
+  '美元指数跌破100关键支撑，非美资产全面受益，黄金上涨2.1%',
+  '美国CPI数据超预期，通胀顽固性引发黄金对冲买盘持续涌入',
+  'IMF下调全球经济增速至2.8%，衰退担忧推升避险配置需求',
+  '对冲基金CFTC持仓黄金净多头创年内新高，机构做多信号明确',
+  '美联储会议纪要显示内部分歧加大，政策前景不确定性推高金价',
+];
+const AGENTS_DATA=[
+  {n:'张明辉',r:'宏观分析师',inf:.85,col:'#3af0d0'},
+  {n:'李珊',r:'期货交易员',inf:.55,col:'#e05060'},
+  {n:'王建国',r:'央行研究员',inf:.95,col:'#f0c040'},
+  {n:'陈晓华',r:'地缘分析师',inf:.65,col:'#3dc87a'},
+  {n:'刘天宇',r:'对冲基金',inf:.80,col:'#9070e0'},
+  {n:'赵欣怡',r:'媒体记者',inf:.60,col:'#3af0d0'},
+  {n:'周海峰',r:'私募经理',inf:.80,col:'#f0c040'},
+  {n:'吴芳',r:'学术经济学家',inf:.50,col:'#9070e0'},
+  {n:'孙磊',r:'商品交易商',inf:.55,col:'#3dc87a'},
+  {n:'徐倩',r:'风险管理师',inf:.50,col:'#e05060'},
+  {n:'马志远',r:'散户代表',inf:.30,col:'#806040'},
+  {n:'钱博文',r:'投行策略师',inf:.75,col:'#3af0d0'},
+];
+const REACTIONS=[
+  [{n:'张明辉',t:'机构投资者',s:'看涨',m:'从基本面看，这波行情有扎实支撑，建议逐步建仓。'}],
+  [{n:'李珊',t:'期货交易员',s:'看跌',m:'短期涨幅过快，技术面有回调需求，先减仓观望。'}],
+  [{n:'王建国',t:'政策制定者',s:'中性',m:'需要更多数据验证，保持审慎，等待信号明朗。'}],
+  [{n:'刘天宇',t:'对冲基金',s:'看涨',m:'逆向布局时机来了，机构资金正在低调吸筹。'}],
+  [{n:'赵欣怡',t:'媒体分析师',s:'看涨',m:'市场叙事正在转向，看涨声音主导，情绪共振效应将放大。'}],
+  [{n:'周海峰',t:'私募经理',s:'看涨',m:'长期来看黄金配置价值凸显，已增持ETF仓位。'}],
+];
+const EMERGENCES=['🔺 涌现：机构做多信号快速传导，从众效应激活','⚡ 涌现：市场共识快速形成，看涨阵营扩至65%','🌊 涌现：情绪级联引发羊群效应，中性智能体批量转向'];
+const REPORT=`**核心预测**：未来 **6周** 黄金大概率温和上涨 **4-8%**，置信度 **68%**。
+
+| 情景 | 概率 | 驱动因素 |
+|---|---|---|
+| 强势上涨 | 30% | 美联储转鸽+地缘升级 |
+| 温和上涨 | 45% | 央行购金+通胀韧性 |
+| 震荡整理 | 18% | 美元阶段性反弹 |
+| 下行风险 | 7% | 黑天鹅事件 |
+
+**风险提示**：美联储意外鹰派表态可能打压近期涨幅。`;
+
+let running=false;
+function setSentiment(bull,neut,bear){
+  const bars=document.querySelectorAll('.sent-wrap .sb');
+  bars[0].style.width=bull+'%'; bars[0].textContent=bull>=12?`↑${bull}%`:'';
+  bars[1].style.width=neut+'%'; bars[1].textContent=neut>=12?`—${neut}%`:'';
+  bars[2].style.width=bear+'%'; bars[2].textContent=bear>=12?`↓${bear}%`:'';
+  document.getElementById('p-bull').textContent=`↑ ${bull}%`;
+  document.getElementById('p-neut').textContent=`— ${neut}%`;
+  document.getElementById('p-bear').textContent=`↓ ${bear}%`;
+}
+function setProgress(p){
+  document.getElementById('prog-bar').style.width=p+'%';
+  document.getElementById('prog-pct').textContent=p+'%';
+}
+function addCard(round,event,reactions,bull,bear,emergence){
+  const feed=document.getElementById('sim-feed');
+  feed.querySelector('.empty-state')?.remove();
+  const card=document.createElement('div');
+  card.className='sim-card';
+  card.style.animationDelay='.0s';
+  const rxHtml=reactions.map(r=>{
+    const sc=r.s==='看涨'?'s-bull':r.s==='看跌'?'s-bear':'s-neut';
+    return `<div class="sc-reaction"><strong>${r.n}</strong> <span class="sc-sentiment ${sc}">${r.s}</span> — ${r.m}</div>`;
+  }).join('');
+  card.innerHTML=`
+    <div><span class="sc-round">R${round}</span>
+    <span style="font-family:var(--ff-m);font-size:9px;color:var(--text-dim);margin-left:8px">↑${bull}% ↓${bear}%</span></div>
+    <div class="sc-event">${event}</div>
+    ${rxHtml}
+    ${emergence?`<div class="emergence">${emergence}</div>`:''}`;
+  feed.appendChild(card);
+  feed.scrollTop=feed.scrollHeight;
+}
+function renderAgents(sentMap){
+  const list=document.getElementById('agents-list');
+  list.innerHTML=AGENTS_DATA.map(a=>{
+    const s=sentMap[a.n]||'中性';
+    const dotCol=s==='看涨'?'#3dc87a':s==='看跌'?'#e05060':'#506080';
+    return `<div class="agent-row">
+      <div class="agent-dot" style="background:${dotCol}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="agent-name">${a.n}</div>
+        <div class="agent-role">${a.r}</div>
+      </div>
+      <div class="inf-bar"><div class="inf-fill" style="width:${a.inf*100}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+async function startDemo(){
+  if(running)return;
+  running=true;
+  const btn=document.getElementById('start-btn');
+  btn.textContent='运行中…'; btn.disabled=true;
+  document.getElementById('sim-feed').innerHTML=
+    `<div style="font-family:var(--ff-m);font-size:10px;color:var(--text-dim);padding:8px 0">
+    [INIT] 构建知识图谱…</div>`;
+  document.getElementById('report-area').style.display='none';
+  document.getElementById('chip-dot').className='chip-dot sim';
+  document.getElementById('chip-text').textContent='BUILDING';
+  setProgress(0);
+
+  const delay=ms=>new Promise(r=>setTimeout(r,ms));
+  const TOTAL=8;
+
+  // Phase 1: graph
+  await delay(600);
+  setProgress(15);
+  document.getElementById('m-nodes').textContent='8 nodes · 7 edges';
+  document.getElementById('m-kg').textContent='✓ 已构建';
+  document.getElementById('sim-feed').innerHTML+=
+    `<div style="font-family:var(--ff-m);font-size:10px;color:var(--cyan);padding:4px 0">
+    [GRAPH] 8 entities, 7 relations extracted ✓</div>`;
+
+  // Phase 2: personas
+  await delay(500);
+  setProgress(30);
+  document.getElementById('m-agents').textContent='12';
+  document.getElementById('chip-text').textContent='SIMULATING';
+  document.getElementById('sim-feed').innerHTML+=
+    `<div style="font-family:var(--ff-m);font-size:10px;color:var(--gold);padding:4px 0">
+    [AGENTS] 12 personas generated ✓</div>`;
+  const initSent={};
+  AGENTS_DATA.forEach(a=>{initSent[a.n]='中性';});
+  renderAgents(initSent);
+  setSentiment(33,34,33);
+
+  // Phase 3: rounds
+  const sentHistory=[[33,34,33],[45,30,25],[38,25,37],[52,20,28],[60,22,18],[55,25,20],[63,20,17],[67,18,15]];
+  for(let r=1;r<=TOTAL;r++){
+    await delay(900+Math.random()*300);
+    const ev=EVENTS[r-1];
+    const rx=REACTIONS[(r-1)%REACTIONS.length];
+    const em=r===3?EMERGENCES[0]:r===5?EMERGENCES[1]:r===7?EMERGENCES[2]:'';
+    const [bull,neut,bear]=sentHistory[r-1];
+    setSentiment(bull,neut,bear);
+    addCard(r,ev,rx,bull,bear,em);
+    setProgress(30+Math.floor(60*r/TOTAL));
+    document.getElementById('m-rounds').textContent=`${r} / ${TOTAL}`;
+    // Update agent sentiments
+    const updSent={};
+    AGENTS_DATA.forEach((a,i)=>{
+      const roll=Math.random();
+      updSent[a.n]=roll<bull/100?'看涨':roll<(bull+bear)/100?'看跌':'中性';
+    });
+    renderAgents(updSent);
+  }
+
+  // Phase 4: report
+  await delay(700);
+  setProgress(100);
+  document.getElementById('chip-dot').className='chip-dot done';
+  document.getElementById('chip-text').textContent='DONE';
+  document.getElementById('report-area').style.display='block';
+  document.getElementById('report-preview').innerHTML=
+    REPORT.replace(/\*\*(.+?)\*\*/g,'<strong style="color:var(--gold2)">$1</strong>')
+      .replace(/\n/g,'<br>');
+
+  btn.textContent='⚡ 重新仿真'; btn.disabled=false;
+  running=false;
+}
+</script>
+</body>
+</html>
