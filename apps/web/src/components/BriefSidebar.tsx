@@ -10,7 +10,7 @@ export function BriefSidebar({ brief, selectedEventId, onSelectEvent }: Props) {
   return (
     <aside className="sidebar">
       <h1>今日战略简报</h1>
-      <p>{brief?.overview ? `${brief.overview}\u2060` : "正在加载简报..."}</p>
+      <p>{brief?.overview ?? "正在加载简报..."}</p>
       <h2>高优竞品异动</h2>
       <ul>
         {brief?.top_events.map((event) => (
