@@ -55,7 +55,10 @@ def simulate_response(event: EventRecord) -> SimulationResponse:
     ]
 
     recommended = "local_follow" if event.is_core_district and (event.price_change_pct or 0) >= 5 else "hold"
-    reason = "竞品在核心婚嫁黄金商圈发起 8% 级别促销，局部跟进能平衡客流防守与价格体系压力。"
+    if recommended == "local_follow":
+        reason = "竞品在核心婚嫁黄金商圈发起 8% 级别促销，局部跟进能平衡客流防守与价格体系压力。"
+    else:
+        reason = "当前异动未达到核心商圈高优阈值，保持不动更有利于控制价格体系压力并继续观察客流变化。"
 
     return SimulationResponse(
         event_id=event.event_id,
