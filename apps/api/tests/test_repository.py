@@ -5,8 +5,8 @@ from app.models import EventRecord, ThresholdConfig
 from app.repository import EventRepository
 
 
-def test_repository_round_trips_events_and_thresholds(tmp_path: Path):
-    repo = EventRepository(tmp_path / "demo.sqlite")
+def test_repository_round_trips_events_and_thresholds(repo_tmp_path: Path):
+    repo = EventRepository(repo_tmp_path / "demo.sqlite")
     repo.init_db()
     event = EventRecord(
         event_id="hk-csg-pricecut-20260523",
@@ -52,8 +52,8 @@ def test_repository_round_trips_events_and_thresholds(tmp_path: Path):
     assert config.optional_price_change_pct == 2.0
 
 
-def test_app_config_uses_instance_repo_root_for_derived_paths(tmp_path: Path):
-    config = AppConfig(repo_root=tmp_path)
+def test_app_config_uses_instance_repo_root_for_derived_paths(repo_tmp_path: Path):
+    config = AppConfig(repo_root=repo_tmp_path)
 
-    assert config.database_path == tmp_path / "data" / "demo.sqlite"
-    assert config.manifest_path == tmp_path / "data" / "source_manifest.json"
+    assert config.database_path == repo_tmp_path / "data" / "demo.sqlite"
+    assert config.manifest_path == repo_tmp_path / "data" / "source_manifest.json"
