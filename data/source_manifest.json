@@ -1,0 +1,29 @@
+[
+  {
+    "source_id": "hk-csg-official",
+    "market": "HK",
+    "brand": "周生生",
+    "source_type": "competitor_official",
+    "language": "zh-Hant",
+    "url": "https://example.com/hk-csg-pricecut",
+    "fixture_path": "data/fixtures/raw/hk_csg_pricecut.html"
+  },
+  {
+    "source_id": "hk-harbour-city-mall",
+    "market": "HK",
+    "brand": "海港城",
+    "source_type": "mall_official",
+    "language": "zh-Hant",
+    "url": "https://example.com/hk-mall-promo",
+    "fixture_path": "data/fixtures/raw/hk_mall_promo.html"
+  },
+  {
+    "source_id": "us-signet-seed",
+    "market": "US",
+    "brand": "Signet",
+    "source_type": "seeded_media",
+    "language": "en",
+    "url": "https://example.com/us-signet-seed",
+    "fixture_path": "data/fixtures/raw/seed_us_signet.json"
+  }
+]
