@@ -13,6 +13,13 @@ def test_brief_simulation_and_threshold_update_flow():
     assert brief.status_code == 200
     assert brief.json()["top_events"][0]["event_id"] == "hk-csg-pricecut-20260523"
 
+    thresholds = client.get("/api/config/thresholds")
+    assert thresholds.status_code == 200
+    assert thresholds.json() == {
+        "must_report_price_change_pct": 5.0,
+        "optional_price_change_pct": 2.0,
+    }
+
     simulation = client.post("/api/events/hk-csg-pricecut-20260523/simulate")
     assert simulation.status_code == 200
     assert simulation.json()["recommended_option_id"] == "local_follow"
@@ -24,12 +31,40 @@ def test_brief_simulation_and_threshold_update_flow():
     assert config.status_code == 200
     assert config.json()["must_report_price_change_pct"] == 6.0
 
+    updated_thresholds = client.get("/api/config/thresholds")
+    assert updated_thresholds.status_code == 200
+    assert updated_thresholds.json() == {
+        "must_report_price_change_pct": 6.0,
+        "optional_price_change_pct": 3.0,
+    }
+
     chat = client.post(
         "/api/chat",
         json={"question": "综合多方因素最优选择哪种应对级别，各岗位后续该落实哪些相关工作"},
     )
     assert chat.status_code == 200
     assert "局部跟进" in chat.json()["answer"]
+
+
+def test_chat_reuses_persisted_events_without_rebuilding_pipeline(monkeypatch):
+    brief = client.get("/api/briefs/today")
+    assert brief.status_code == 200
+
+    import app.routes.chat as chat_route
+
+    def _unexpected_rebuild():
+        raise AssertionError("build_today_brief should not run when events already exist")
+
+    monkeypatch.setattr(chat_route, "build_today_brief", _unexpected_rebuild)
+
+    response = client.post(
+        "/api/chat",
+        json={"question": "综合多方因素最优选择哪种应对级别，各岗位后续该落实哪些相关工作"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["cited_event_ids"] == ["hk-csg-pricecut-20260523"]
+    assert "局部跟进" in response.json()["answer"]
 
 
 def _event(

@@ -11,6 +11,7 @@ from app.models import SourceRecord
 
 
 logger = logging.getLogger(__name__)
+LIVE_SOURCE_TIMEOUT_SECONDS = 2
 
 
 def _read_text(path: Path) -> str:
@@ -48,7 +49,7 @@ def fetch_source_records() -> list[SourceRecord]:
         fallback_captured_at = item.get("captured_at")
 
         try:
-            response = requests.get(item["url"], timeout=10)
+            response = requests.get(item["url"], timeout=LIVE_SOURCE_TIMEOUT_SECONDS)
             response.raise_for_status()
             title, body = _parse_html(response.text)
             captured_at = datetime.now(timezone.utc).isoformat()
