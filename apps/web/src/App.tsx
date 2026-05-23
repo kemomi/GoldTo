@@ -58,7 +58,12 @@ export function App({ api = defaultApi }: AppProps) {
           thresholds={thresholds}
           onSave={async (next) => {
             const saved = await api.updateThresholds(next);
+            const refreshedBrief = await api.getBrief();
             setThresholds(saved);
+            setBrief(refreshedBrief);
+            setSelectedEventId(refreshedBrief.top_events[0]?.event_id ?? "");
+            setSimulation(null);
+            setAnswer("");
           }}
         />
         <EvidencePanel event={selectedEvent} />
