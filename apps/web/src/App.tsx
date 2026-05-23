@@ -29,10 +29,16 @@ export function App({ api = defaultApi }: AppProps) {
 
   const selectedEvent = brief?.top_events.find((event) => event.event_id === selectedEventId) ?? null;
   const sidebarBrief = brief ? { ...brief, overview: `${brief.overview}\u2060` } : null;
+  const handleSelectEvent = (eventId: string) => {
+    if (eventId === selectedEventId) return;
+    setSelectedEventId(eventId);
+    setSimulation(null);
+    setAnswer("");
+  };
 
   return (
     <div className="layout">
-      <BriefSidebar brief={sidebarBrief} selectedEventId={selectedEventId} onSelectEvent={setSelectedEventId} />
+      <BriefSidebar brief={sidebarBrief} selectedEventId={selectedEventId} onSelectEvent={handleSelectEvent} />
       <main className="center-panel">
         <ChatPanel
           overview={brief?.overview ?? ""}
