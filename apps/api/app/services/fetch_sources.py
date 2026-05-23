@@ -52,7 +52,7 @@ def fetch_source_records() -> list[SourceRecord]:
             response.raise_for_status()
             title, body = _parse_html(response.text)
             captured_at = datetime.now(timezone.utc).isoformat()
-        except (requests.RequestException, ValueError) as exc:
+        except (requests.RequestException, RuntimeError, ValueError) as exc:
             logger.warning(
                 "fixture fallback for %s (%s): %s",
                 item["source_id"],
