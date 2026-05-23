@@ -1,5 +1,8 @@
+import gc
 import os
+import shutil
 import sys
+import time
 import uuid
 from pathlib import Path
 
@@ -16,14 +19,30 @@ TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
 
 
 @pytest.fixture(autouse=True)
-def isolated_demo_database(request: pytest.FixtureRequest):
-    test_name = request.node.name.replace(os.sep, "-").replace(":", "-")
-    database_path = TEST_TMP_ROOT / f"{test_name}-{uuid.uuid4().hex}.sqlite"
-    os.environ["APP_DATABASE_PATH"] = str(database_path)
+def isolated_demo_database(test_tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("APP_DATABASE_PATH", str(test_tmp_path / "demo.sqlite"))
     yield
 
 
 @pytest.fixture
-def repo_tmp_path():
-    TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
-    yield TEST_TMP_ROOT
+def test_tmp_path(request: pytest.FixtureRequest):
+    test_name = request.node.name.replace(os.sep, "-").replace(":", "-")
+    path = TEST_TMP_ROOT / f"{test_name}-{uuid.uuid4().hex}"
+    path.mkdir(parents=True, exist_ok=False)
+    yield path
+    gc.collect()
+    for _ in range(40):
+        try:
+            shutil.rmtree(path)
+            break
+        except FileNotFoundError:
+            break
+        except PermissionError:
+            time.sleep(0.05)
+    else:
+        shutil.rmtree(path)
+
+
+@pytest.fixture
+def repo_tmp_path(test_tmp_path: Path):
+    yield test_tmp_path
