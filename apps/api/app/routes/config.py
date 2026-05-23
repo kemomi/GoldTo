@@ -13,11 +13,6 @@ def _repo() -> EventRepository:
     return repo
 
 
-@router.get("/thresholds")
-def get_thresholds():
-    return _repo().load_thresholds().model_dump()
-
-
 @router.patch("/thresholds")
 def update_thresholds(payload: ThresholdConfig):
     _repo().save_thresholds(payload)

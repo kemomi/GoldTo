@@ -13,14 +13,6 @@ def _repo() -> EventRepository:
     return repo
 
 
-@router.get("/{event_id}")
-def get_event(event_id: str):
-    event = _repo().get_event(event_id)
-    if event is None:
-        raise HTTPException(status_code=404, detail="Event not found")
-    return event.model_dump()
-
-
 @router.post("/{event_id}/simulate")
 def simulate_event(event_id: str):
     event = _repo().get_event(event_id)
