@@ -15,6 +15,7 @@ export function ChatPanel({ overview, answer, onAsk, onSimulate }: Props) {
   return (
     <section>
       <h2>智能分析师</h2>
+      <p>{overview}</p>
       <div className="question-list">
         {DEMO_QUESTIONS.map((question) => (
           <button key={question} onClick={() => void onAsk(question)}>

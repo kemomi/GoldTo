@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { App } from "../App";
@@ -43,5 +43,15 @@ describe("App", () => {
     expect(await screen.findByText("周生生尖沙咀婚嫁黄金限时 8% 优惠")).toBeTruthy();
     expect(screen.getByRole("button", { name: "开始模拟" })).toBeTruthy();
     expect(screen.getByText("今日五大市场整体竞争烈度偏高。")).toBeTruthy();
+  });
+
+  it("renders the overview inside the analyst chat panel", async () => {
+    const { container } = render(<App api={api as never} />);
+
+    await screen.findByText("周生生尖沙咀婚嫁黄金限时 8% 优惠");
+
+    const chatPanel = container.querySelector("main section");
+    expect(chatPanel).toBeTruthy();
+    expect(within(chatPanel!).getByText("今日五大市场整体竞争烈度偏高。")).toBeTruthy();
   });
 });
