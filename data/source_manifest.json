@@ -6,7 +6,8 @@
     "source_type": "competitor_official",
     "language": "zh-Hant",
     "url": "https://example.com/hk-csg-pricecut",
-    "fixture_path": "data/fixtures/raw/hk_csg_pricecut.html"
+    "fixture_path": "data/fixtures/raw/hk_csg_pricecut.html",
+    "captured_at": "2026-05-23T08:00:00+00:00"
   },
   {
     "source_id": "hk-harbour-city-mall",
@@ -15,7 +16,8 @@
     "source_type": "mall_official",
     "language": "zh-Hant",
     "url": "https://example.com/hk-mall-promo",
-    "fixture_path": "data/fixtures/raw/hk_mall_promo.html"
+    "fixture_path": "data/fixtures/raw/hk_mall_promo.html",
+    "captured_at": "2026-05-23T10:00:00+00:00"
   },
   {
     "source_id": "us-signet-seed",
