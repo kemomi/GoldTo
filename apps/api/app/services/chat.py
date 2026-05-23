@@ -19,7 +19,10 @@ def answer_demo_question(question: str, brief: BriefResponse, simulation: Simula
             cited_event_ids=[top.event_id],
         )
     if "不同应对策略" in question and simulation is not None:
-        answer = "；".join(f"{option.label_zh}：{option.rationale}" for option in simulation.options if option.option_id != "escalate_attention")
+        options = [option for option in simulation.options if option.option_id != "escalate_attention"]
+        if not options:
+            options = simulation.options
+        answer = "；".join(f"{option.label_zh}：{option.rationale}" for option in options)
         return ChatResponse(answer=answer, cited_event_ids=[simulation.event_id])
     if "最优选择" in question and simulation is not None:
         label = _recommended_label(simulation)

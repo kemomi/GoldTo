@@ -94,6 +94,17 @@ def test_non_local_follow_recommendation_uses_matching_chat_label():
     assert "局部跟进" not in chat.answer
 
 
+def test_low_confidence_strategy_question_uses_escalation_option():
+    brief = _brief(_event(event_id="review-event", confidence=0.7))
+    simulation = simulate_response(_event(event_id="review-event", confidence=0.7))
+
+    chat = answer_demo_question("请说明不同应对策略", brief, simulation)
+
+    assert simulation.recommended_option_id == "escalate_attention"
+    assert chat.answer != ""
+    assert "升级关注" in chat.answer
+
+
 def test_unknown_event_simulation_returns_404():
     response = client.post("/api/events/unknown-event/simulate")
 
