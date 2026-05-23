@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 version: "3.9"
+=======
+version: '3.9'
+>>>>>>> kemomi/main
 
 services:
   backend:
@@ -7,6 +11,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5001:5001"
+<<<<<<< HEAD
     env_file:
       - .env
     environment:
@@ -28,9 +33,28 @@ services:
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+=======
+    env_file: .env
+    volumes:
+      - ./backend/uploads:/app/uploads
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+>>>>>>> kemomi/main
     depends_on:
       - backend
     restart: unless-stopped
 
+<<<<<<< HEAD
 volumes:
   backend_uploads:
+=======
+networks:
+  default:
+    name: goldto_network
+>>>>>>> kemomi/main

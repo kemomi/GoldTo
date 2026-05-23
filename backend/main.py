@@ -43,12 +43,16 @@ async def root():
 
 @app.get("/health")
 async def health():
+<<<<<<< HEAD
     return {
         "status": "ok",
         "llm_mode": "mock" if settings.is_mock else "real",
         "model": settings.llm_model_name,
         "zep_enabled": bool(settings.zep_api_key),
     }
+=======
+    return {"status": "ok"}
+>>>>>>> kemomi/main
 
 
 if __name__ == "__main__":

@@ -14,12 +14,18 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import AsyncGenerator, Optional
 
+<<<<<<< HEAD
+=======
+from openai import AsyncOpenAI
+
+>>>>>>> kemomi/main
 from config import settings
 from graph.graph_builder import GraphBuilder
 from agents.persona_agent import PersonaAgent, generate_personas
 from agents.report_agent import ReportAgent
 from memory.zep_memory import MemoryManager
 
+<<<<<<< HEAD
 # ── LLM 客户端选择（有 Key 用真实，无 Key 用 Mock）────────────────────────────
 _MOCK_KEYS = {"", "sk-placeholder", "your_api_key_here", "your_api_key"}
 
@@ -40,6 +46,8 @@ def _build_llm():
             base_url=settings.llm_base_url,
         )
 
+=======
+>>>>>>> kemomi/main
 
 class SimStatus(str, Enum):
     IDLE = "idle"
@@ -95,12 +103,24 @@ class SimulationEngine:
 
     def __init__(self):
         self._sessions: dict[str, Session] = {}
+<<<<<<< HEAD
         self._llm = None
         self._memory: Optional[MemoryManager] = None
 
     def _get_llm(self):
         if self._llm is None:
             self._llm = _build_llm()
+=======
+        self._llm: Optional[AsyncOpenAI] = None
+        self._memory: Optional[MemoryManager] = None
+
+    def _get_llm(self) -> AsyncOpenAI:
+        if self._llm is None:
+            self._llm = AsyncOpenAI(
+                api_key=settings.llm_api_key,
+                base_url=settings.llm_base_url,
+            )
+>>>>>>> kemomi/main
         return self._llm
 
     def _get_memory(self) -> MemoryManager:

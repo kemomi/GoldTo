@@ -8,7 +8,11 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # LLM
+<<<<<<< HEAD
     llm_api_key: str = ""
+=======
+    llm_api_key: str = "sk-placeholder"
+>>>>>>> kemomi/main
     llm_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     llm_model_name: str = "qwen-plus"
 
@@ -28,6 +32,7 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
         case_sensitive = False
 
+<<<<<<< HEAD
     @property
     def is_mock(self) -> bool:
         """True when running without a real LLM API key."""
@@ -35,6 +40,8 @@ class Settings(BaseSettings):
         key = (self.llm_api_key or "").strip()
         return key in _placeholders or key.startswith("your_")
 
+=======
+>>>>>>> kemomi/main
 
 settings = Settings()
 settings.upload_dir.mkdir(parents=True, exist_ok=True)

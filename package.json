@@ -1,6 +1,7 @@
 {
   "name": "goldto",
   "version": "1.0.0",
+<<<<<<< HEAD
   "description": "GoldTo — Swarm Intelligence Prediction Engine",
   "scripts": {
     "dev": "bash dev.sh",
@@ -9,5 +10,19 @@
     "backend": "cd backend && uvicorn main:app --host 0.0.0.0 --port 5001 --reload",
     "frontend": "cd frontend && npm run dev",
     "build": "cd frontend && npm run build"
+=======
+  "description": "Swarm Intelligence Engine for Prediction",
+  "scripts": {
+    "setup": "npm install && cd frontend && npm install",
+    "setup:backend": "cd backend && uv sync",
+    "setup:all": "npm run setup && npm run setup:backend",
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,magenta\" \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd backend && uv run uvicorn main:app --reload --host 0.0.0.0 --port 5001",
+    "frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+>>>>>>> kemomi/main
   }
 }

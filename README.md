@@ -182,6 +182,7 @@ docker compose up -d
 
 ### Mock 模式
 
+<<<<<<< HEAD
 ```bash
 cd ~/GoldTo
 
@@ -195,6 +196,8 @@ cd frontend && npm install --legacy-peer-deps && cd ..
 bash dev.sh
 ```
 
+=======
+>>>>>>> kemomi/main
 **不填写 API Key 也可以完整体验所有功能。**
 
 当 `LLM_API_KEY` 为空或为占位符时，系统自动切换到 Mock 模式：
@@ -468,5 +471,8 @@ MIT License © 2025 GoldTo Contributors
 
 </div>
 # GoldTo
+<<<<<<< HEAD
 # GoldTo
 # GoldTo
+=======
+>>>>>>> kemomi/main
