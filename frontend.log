@@ -1,0 +1,39 @@
+
+> goldto-frontend@1.0.0 dev
+> vite --host 0.0.0.0 --port 3000
+
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m4010[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.31.209.136:[1m3000[22m/[39m
+[2m09:27:48[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/HomePage.jsx, /src/index.css[22m
+[2m09:59:10[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/SettingsPage.jsx, /src/index.css[22m
+[2m09:59:39[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/SettingsPage.jsx, /src/index.css[22m
+[2m10:14:08[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/SettingsPage.jsx, /src/index.css[22m
+[2m10:33:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/sessions/92079a5c/stream[39m
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+[2m10:33:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/sessions/92079a5c/stream[39m
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+[2m10:33:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/sessions/92079a5c[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m10:33:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/sessions/92079a5c/stream[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m10:33:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/sessions/92079a5c[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m10:33:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/sessions/92079a5c[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+[2m10:33:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/sessions/92079a5c[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)

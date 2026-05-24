@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gold: #f59e0b;
+  --gold-bright: #fbbf24;
+  --dark-900: #0a0a0f;
+  --dark-800: #111118;
+  --dark-700: #1a1a2e;
+  --dark-600: #16213e;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border: rgba(251, 191, 36, 0.15);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--dark-900);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--dark-800); }
+::-webkit-scrollbar-thumb { background: rgba(245, 158, 11, 0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(245, 158, 11, 0.6); }
+
+/* ── Gold glow ── */
+.gold-glow {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2), 0 0 40px rgba(245, 158, 11, 0.05);
+}
+.gold-text-glow {
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+}
+
+/* ── Glassmorphism card ── */
+.glass-card {
+  background: rgba(17, 17, 24, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* ── Animated gradient border ── */
+.gradient-border {
+  position: relative;
+  background: var(--dark-800);
+  border-radius: 12px;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.6), rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* ── Progress bar ── */
+.progress-bar {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Float animation ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float { animation: float 3s ease-in-out infinite; }
+
+/* ── Particle dots ── */
+.dot-grid {
+  background-image: radial-gradient(rgba(245, 158, 11, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ── Stance indicator ── */
+.stance-bar-fill {
+  transition: width 0.5s ease;
+}
+
+/* ── Markdown report styling ── */
+.report-content h1, .report-content h2, .report-content h3 {
+  color: var(--gold-bright);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.report-content p { line-height: 1.7; margin-bottom: 0.8rem; color: var(--text-primary); }
+.report-content ul, .report-content ol { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+.report-content li { margin-bottom: 0.4rem; color: var(--text-secondary); }
+.report-content strong { color: var(--gold); }
+.report-content blockquote {
+  border-left: 3px solid var(--gold);
+  padding-left: 1rem;
+  color: var(--text-secondary);
+  margin: 1rem 0;
+}
+.report-content code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+/* ── Chat ── */
+.chat-bubble-user {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.chat-bubble-ai {
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Agent card ── */
+.agent-card {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.agent-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.1);
+}
+.agent-card.selected {
+  border-color: rgba(245, 158, 11, 0.8) !important;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+}
+
+/* ── Loading spinner ── */
+.spinner {
+  border: 2px solid rgba(245, 158, 11, 0.1);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Tab ── */
+.tab-active {
+  color: var(--gold);
+  border-bottom: 2px solid var(--gold);
+}
+.tab-inactive {
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+}
+.tab-inactive:hover { color: var(--text-primary); }

@@ -1,0 +1,10 @@
+INFO:     Started server process [33684]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:5001 (Press CTRL+C to quit)
+[Startup] Database initialized
+[Scheduler] APScheduler started
+[Scheduler] Daily job scheduled at 09:30 (job_id=daily_briefing)
+INFO:     127.0.0.1:50810 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50812 - "GET /api/user/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59233 - "GET /api/user/config HTTP/1.1" 200 OK

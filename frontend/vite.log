@@ -1,0 +1,113 @@
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m641[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.31.209.136:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.24.32.1:[1m3000[22m/[39m
+[2m16:27:48[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m16:27:53[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m16:37:14[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/BriefingHistoryPage.jsx, /src/index.css[22m
+[2m16:37:32[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/BriefingHistoryPage.jsx, /src/index.css[22m
+[2m16:37:44[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m16:37:50[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m16:38:23[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/BriefingDetailPage.jsx, /src/index.css[22m
+[2m16:39:36[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/BriefingDetailPage.jsx, /src/index.css[22m
+[2m16:39:48[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m16:39:53[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m16:47:44[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/SettingsPage.jsx, /src/index.css[22m
+[2m16:48:18[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/SettingsPage.jsx, /src/index.css[22m
+[2m16:48:31[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m16:48:36[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m17:06:21[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/BriefingDetailPage.jsx, /src/index.css[22m
+[2m17:06:34[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m17:06:40[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m17:26:42[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/BriefingDetailPage.jsx, /src/index.css[22m
+[2m17:28:46[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m17:28:51[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mdist-test/index.html[22m
+[2m17:36:33[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/BriefingDetailPage.jsx, /src/index.css[22m
+[2m17:48:58[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m
+[2m17:49:08[22m [36m[1m[vite][22m[39m [32m✨ new dependencies optimized: [33mrecharts[32m[39m
+[2m17:49:08[22m [36m[1m[vite][22m[39m [32m✨ optimized dependencies changed. reloading[39m
+[2m17:49:08[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/Layout.jsx, /src/index.css[22m
+[2m18:19:10[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/BriefingHistoryPage.jsx, /src/index.css[22m
+[2m18:34:27[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/SettingsPage.jsx, /src/index.css[22m
+[2m18:34:28[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\src\pages\SettingsPage.jsx: Unexpected reserved word 'await'. (94:23)
+
+[0m [90m 92 |[31m       setChannels(ch[33m.[31mchannels [33m||[31m [])
+ [90m 93 |[31m       [90m// 加载预警规则[31m
+[31m[1m>[22m[31m[90m 94 |[31m       [36mconst[31m alertRes [33m=[31m [36mawait[31m getAlertRule()
+ [90m    |[31m                        [31m[1m^[22m[31m
+ [90m 95 |[31m       [36mif[31m (alertRes[33m.[31msuccess [33m&&[31m alertRes[33m.[31mdata) {
+ [90m 96 |[31m         setAlertRule(prev [33m=>[31m ({ [33m...[31mprev[33m,[31m [33m...[31malertRes[33m.[31mdata }))
+ [90m 97 |[31m       }[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/Users/Junting/Desktop/GoldTo-main/GoldTo-main/frontend/src/pages/SettingsPage.jsx[39m:94:23
+[33m  92 |        setChannels(ch.channels || [])
+  93 |        // 加载预警规则
+  94 |        const alertRes = await getAlertRule()
+     |                         ^
+  95 |        if (alertRes.success && alertRes.data) {
+  96 |          setAlertRule(prev => ({ ...prev, ...alertRes.data }))[39m
+      at constructor (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:365:19)
+      at JSXParserMixin.raise (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:6616:19)
+      at JSXParserMixin.checkReservedWord (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12248:12)
+      at JSXParserMixin.parseIdentifierName (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12228:12)
+      at JSXParserMixin.parseIdentifier (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12198:23)
+      at JSXParserMixin.parseExprAtom (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11433:27)
+      at JSXParserMixin.parseExprAtom (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:4776:20)
+      at JSXParserMixin.parseExprSubscripts (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11098:23)
+      at JSXParserMixin.parseUpdate (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11083:21)
+      at JSXParserMixin.parseMaybeUnary (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11063:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10916:61)
+      at JSXParserMixin.parseExprOps (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10921:23)
+      at JSXParserMixin.parseMaybeConditional (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10898:23)
+      at JSXParserMixin.parseMaybeAssign (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10848:21)
+      at C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10817:39
+      at JSXParserMixin.allowInAnd (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12438:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10817:17)
+      at JSXParserMixin.parseVar (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:13401:91)
+      at JSXParserMixin.parseVarStatement (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:13247:10)
+      at JSXParserMixin.parseStatementContent (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12868:23)
+      at JSXParserMixin.parseStatementLike (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12784:17)
+      at JSXParserMixin.parseStatementListItem (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12764:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:13333:61)
+      at JSXParserMixin.parseBlockBody (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseBlock (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:13314:10)
+      at JSXParserMixin.parseFunctionBody (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12117:24)
+      at JSXParserMixin.parseArrowExpression (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12092:10)
+      at JSXParserMixin.parseParenAndDistinguishExpression (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11704:12)
+      at JSXParserMixin.parseExprAtom (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11348:23)
+      at JSXParserMixin.parseExprAtom (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:4776:20)
+      at JSXParserMixin.parseExprSubscripts (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11098:23)
+      at JSXParserMixin.parseUpdate (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11083:21)
+      at JSXParserMixin.parseMaybeUnary (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11063:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10916:61)
+      at JSXParserMixin.parseExprOps (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10921:23)
+      at JSXParserMixin.parseMaybeConditional (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10898:23)
+      at JSXParserMixin.parseMaybeAssign (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10848:21)
+      at C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10817:39
+      at JSXParserMixin.allowInAnd (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12443:12)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10817:17)
+      at JSXParserMixin.parseMaybeAssignAllowInOrVoidPattern (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12510:17)
+      at JSXParserMixin.parseExprListItem (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:12192:18)
+      at JSXParserMixin.parseCallExpressionArguments (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11269:22)
+      at JSXParserMixin.parseCoverCallAndAsyncArrowHead (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11203:29)
+      at JSXParserMixin.parseSubscript (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11137:19)
+      at JSXParserMixin.parseSubscripts (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11111:19)
+      at JSXParserMixin.parseExprSubscripts (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11102:17)
+      at JSXParserMixin.parseUpdate (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11083:21)
+      at JSXParserMixin.parseMaybeUnary (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:11063:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\Users\Junting\Desktop\GoldTo-main\GoldTo-main\frontend\node_modules\@babel\parser\lib\index.js:10916:61)
+[2m18:35:09[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/SettingsPage.jsx, /src/index.css[22m
+[2m18:36:29[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/SettingsPage.jsx, /src/index.css[22m
+[2m18:36:36[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m
+[2m18:36:46[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/Layout.jsx, /src/index.css[22m
+[2m18:37:43[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/SettingsPage.jsx, /src/index.css[22m
+[2m18:42:58[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/SettingsPage.jsx, /src/index.css[22m
+[2m18:46:19[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/BriefingDetailPage.jsx, /src/index.css[22m
+[2m18:46:36[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/AlertHistoryPage.jsx, /src/index.css[22m
+[2m18:47:03[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/DashboardPage.jsx, /src/index.css[22m
+[2m18:47:28[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/DashboardPage.jsx, /src/index.css[22m
+[2m18:47:29[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/index.css[22m
+[2m18:51:11[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/BriefingDetailPage.jsx, /src/index.css[22m
+[2m18:51:24[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/AlertHistoryPage.jsx, /src/index.css[22m
