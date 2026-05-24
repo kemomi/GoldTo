@@ -21,6 +21,7 @@ TEST_TMP_ROOT.mkdir(parents=True, exist_ok=True)
 @pytest.fixture(autouse=True)
 def isolated_demo_database(test_tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("APP_DATABASE_PATH", str(test_tmp_path / "demo.sqlite"))
+    monkeypatch.setenv("APP_ENABLE_LIVE_SOURCES", "false")
     yield
 
 

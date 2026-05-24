@@ -1,4 +1,4 @@
-from app.models import EventRecord, ThresholdConfig
+from app.models import EventRecord, SourceSummary, ThresholdConfig
 from app.services.generate_brief import generate_daily_brief
 from app.services.score_events import score_and_rank_events
 
@@ -23,11 +23,14 @@ def _event(
         summary_zh=event_id,
         source_url="https://example.com",
         source_id=event_id,
+        source_type="competitor_official",
         occurred_at="2026-05-23T08:00:00+08:00",
         price_change_pct=pct,
         is_core_district=district == "尖沙咀",
         confidence=confidence,
         evidence=["https://example.com"],
+        fetch_status="fixture_fallback",
+        fallback_reason="live sources disabled",
     )
 
 
@@ -96,13 +99,25 @@ def test_generate_daily_brief_keeps_one_top_event_per_market():
 
 def test_generate_daily_brief_returns_expected_structure_and_key_fields():
     config = ThresholdConfig(must_report_price_change_pct=5.0, optional_price_change_pct=2.0)
+    source_summary = SourceSummary(
+        total_sources=6,
+        live_count=0,
+        fallback_count=6,
+        categories=[
+            "competitor_official",
+            "industry_news",
+            "mall_official",
+            "platform_announcement",
+            "regulation_update",
+        ],
+    )
     events = [
         _event("hk-top", "尖沙咀", "wedding", 6.0, market="HK"),
         _event("review", "新界", "other", 9.0, market="MO", confidence=0.5),
     ]
 
     ranked, manual_review = score_and_rank_events(events, config)
-    brief = generate_daily_brief(ranked, manual_review)
+    brief = generate_daily_brief(ranked, manual_review, source_summary=source_summary)
 
     assert brief.overview == "今日五大市场整体竞争烈度偏高，香港婚嫁黄金相关异动对晨会优先级最高。"
     assert [event.event_id for event in brief.top_events] == ["hk-top"]
@@ -113,3 +128,4 @@ def test_generate_daily_brief_returns_expected_structure_and_key_fields():
     assert brief.role_actions["ops"] == "区域运营今日优先巡检尖沙咀商圈并准备局部促销预案。"
     assert brief.role_actions["marketing"] == "市场策略岗同步检查婚嫁黄金内容方向与投放素材。"
     assert [event.event_id for event in brief.manual_review] == ["review"]
+    assert brief.source_summary == source_summary

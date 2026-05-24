@@ -2,6 +2,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 import requests
 from bs4 import BeautifulSoup
@@ -39,6 +40,12 @@ def _parse_fixture(path: Path, fallback_captured_at: str | None) -> tuple[str, s
     return title, body, fallback_captured_at
 
 
+def _force_demo_fallback(item: dict[str, Any]) -> None:
+    if item.get("demo_force_fallback"):
+        reason = item.get("demo_force_fallback_reason", "demo fallback requested")
+        raise RuntimeError(reason)
+
+
 def fetch_source_records() -> list[SourceRecord]:
     config = get_config()
     manifest = json.loads(config.manifest_path.read_text(encoding="utf-8"))
@@ -49,10 +56,15 @@ def fetch_source_records() -> list[SourceRecord]:
         fallback_captured_at = item.get("captured_at")
 
         try:
+            if not config.enable_live_sources:
+                raise RuntimeError("live sources disabled")
+            _force_demo_fallback(item)
             response = requests.get(item["url"], timeout=LIVE_SOURCE_TIMEOUT_SECONDS)
             response.raise_for_status()
             title, body = _parse_html(response.text)
             captured_at = datetime.now(timezone.utc).isoformat()
+            fetch_status = "live"
+            fallback_reason = None
         except (requests.RequestException, RuntimeError, ValueError) as exc:
             logger.warning(
                 "fixture fallback for %s (%s): %s",
@@ -61,6 +73,8 @@ def fetch_source_records() -> list[SourceRecord]:
                 exc,
             )
             title, body, captured_at = _parse_fixture(fixture_path, fallback_captured_at)
+            fetch_status = "fixture_fallback"
+            fallback_reason = str(exc)
 
         records.append(
             SourceRecord(
@@ -73,6 +87,8 @@ def fetch_source_records() -> list[SourceRecord]:
                 title=title,
                 body=body,
                 captured_at=captured_at,
+                fetch_status=fetch_status,
+                fallback_reason=fallback_reason,
             )
         )
 

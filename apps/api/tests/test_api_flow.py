@@ -12,6 +12,20 @@ def test_brief_simulation_and_threshold_update_flow():
     brief = client.get("/api/briefs/today")
     assert brief.status_code == 200
     assert brief.json()["top_events"][0]["event_id"] == "hk-csg-pricecut-20260523"
+    assert brief.json()["top_events"][0]["fetch_status"] == "fixture_fallback"
+    assert brief.json()["top_events"][0]["source_type"] == "competitor_official"
+    assert brief.json()["source_summary"] == {
+        "total_sources": 6,
+        "live_count": 0,
+        "fallback_count": 6,
+        "categories": [
+            "competitor_official",
+            "industry_news",
+            "mall_official",
+            "platform_announcement",
+            "regulation_update",
+        ],
+    }
 
     thresholds = client.get("/api/config/thresholds")
     assert thresholds.status_code == 200
@@ -86,12 +100,15 @@ def _event(
         summary_zh="示例摘要",
         source_url="https://example.com/event",
         source_id="demo-source",
+        source_type="competitor_official",
         occurred_at="2026-05-23T08:00:00+08:00",
         price_change_pct=price_change_pct,
         is_core_district=is_core_district,
         confidence=confidence,
         report_level="must_report",
         evidence=["https://example.com/event"],
+        fetch_status="fixture_fallback",
+        fallback_reason="live sources disabled",
     )
 
 
@@ -102,6 +119,12 @@ def _brief(*events: EventRecord) -> BriefResponse:
         compliance_alerts=[],
         opportunities=[],
         role_actions={},
+        source_summary={
+            "total_sources": 6,
+            "live_count": 0,
+            "fallback_count": 6,
+            "categories": ["competitor_official"],
+        },
     )
 
 

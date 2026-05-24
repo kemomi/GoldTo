@@ -5,7 +5,7 @@
     "brand": "周生生",
     "source_type": "competitor_official",
     "language": "zh-Hant",
-    "url": "https://example.com/hk-csg-pricecut",
+    "url": "https://www.chowsangsang.com/en/product/Promotion-Wedding-ChineseWeddings",
     "fixture_path": "data/fixtures/raw/hk_csg_pricecut.html",
     "captured_at": "2026-05-23T08:00:00+00:00"
   },
@@ -15,17 +15,46 @@
     "brand": "海港城",
     "source_type": "mall_official",
     "language": "zh-Hant",
-    "url": "https://example.com/hk-mall-promo",
+    "url": "https://www.harbourcity.com.hk/sc/happening/5348/",
     "fixture_path": "data/fixtures/raw/hk_mall_promo.html",
-    "captured_at": "2026-05-23T10:00:00+00:00"
+    "captured_at": "2026-05-23T10:00:00+00:00",
+    "demo_force_fallback": true,
+    "demo_force_fallback_reason": "demo fallback for live failure showcase"
   },
   {
-    "source_id": "us-signet-seed",
-    "market": "US",
-    "brand": "Signet",
-    "source_type": "seeded_media",
+    "source_id": "sg-pandora-official",
+    "market": "SG",
+    "brand": "Pandora",
+    "source_type": "competitor_official",
     "language": "en",
-    "url": "https://example.com/us-signet-seed",
-    "fixture_path": "data/fixtures/raw/seed_us_signet.json"
+    "url": "https://www.pandoragroup.com/media/press-releases/pandora-establishes-asia-headquarters-in-singapore-to-drive-regional-expansion",
+    "fixture_path": "data/fixtures/raw/sg_pandora_release.json"
+  },
+  {
+    "source_id": "us-ebay-platform",
+    "market": "US",
+    "brand": "eBay",
+    "source_type": "platform_announcement",
+    "language": "en",
+    "url": "https://www.developer.ebay.com/updates/blog/size-standardization",
+    "fixture_path": "data/fixtures/raw/us_ebay_platform.json"
+  },
+  {
+    "source_id": "us-ftc-jewelry-guides",
+    "market": "US",
+    "brand": "FTC",
+    "source_type": "regulation_update",
+    "language": "en",
+    "url": "https://search.ftc.gov/news-events/topics/tools-consumers/jewelry-guides",
+    "fixture_path": "data/fixtures/raw/us_ftc_regulation.json"
+  },
+  {
+    "source_id": "us-nationaljeweler-bridal",
+    "market": "US",
+    "brand": "National Jeweler",
+    "source_type": "industry_news",
+    "language": "en",
+    "url": "https://nationaljeweler.com/articles/13343-the-modern-bride-s-approach-to-wedding-day-jewelry",
+    "fixture_path": "data/fixtures/raw/us_nationaljeweler_bridal.json"
   }
 ]

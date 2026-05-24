@@ -1,7 +1,11 @@
-from app.models import BriefResponse, EventRecord
+from app.models import BriefResponse, EventRecord, SourceSummary
 
 
-def generate_daily_brief(events: list[EventRecord], manual_review: list[EventRecord]) -> BriefResponse:
+def generate_daily_brief(
+    events: list[EventRecord],
+    manual_review: list[EventRecord],
+    source_summary: SourceSummary | None = None,
+) -> BriefResponse:
     must_report = [event for event in events if event.report_level == "must_report"]
     top_events: list[EventRecord] = []
     used_markets: set[str] = set()
@@ -25,4 +29,5 @@ def generate_daily_brief(events: list[EventRecord], manual_review: list[EventRec
             "marketing": "市场策略岗同步检查婚嫁黄金内容方向与投放素材。",
         },
         manual_review=manual_review,
+        source_summary=source_summary,
     )

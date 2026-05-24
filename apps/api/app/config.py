@@ -21,6 +21,9 @@ class AppConfig:
             self.database_path = Path(override) if use_override else self.repo_root / "data" / "demo.sqlite"
         if self.manifest_path is None:
             self.manifest_path = self.repo_root / "data" / "source_manifest.json"
+        enable_live_sources = os.environ.get("APP_ENABLE_LIVE_SOURCES")
+        if enable_live_sources is not None:
+            self.enable_live_sources = enable_live_sources.strip().lower() in {"1", "true", "yes", "on"}
 
 
 def get_config() -> AppConfig:

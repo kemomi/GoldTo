@@ -15,17 +15,39 @@ export function ThresholdPanel({ thresholds, onSave }: Props) {
   }, [thresholds]);
 
   return (
-    <section className="card">
-      <h3>价格异动阈值</h3>
-      <label>
-        必须上报阈值
-        <input type="number" value={form.must_report_price_change_pct} onChange={(event) => setForm({ ...form, must_report_price_change_pct: Number(event.target.value) })} />
+    <section className="card control-card">
+      <div className="section-heading">
+        <div>
+          <p className="section-kicker">Control Tower</p>
+          <h3>价格异动阈值</h3>
+        </div>
+      </div>
+      <p className="card-description">调整上报阈值后会重新刷新简报，让高优事件池与策略建议同步更新。</p>
+      <label className="field">
+        <span>必须上报阈值</span>
+        <div className="input-shell">
+          <input
+            type="number"
+            value={form.must_report_price_change_pct}
+            onChange={(event) => setForm({ ...form, must_report_price_change_pct: Number(event.target.value) })}
+          />
+          <em>%</em>
+        </div>
       </label>
-      <label>
-        可选上报阈值
-        <input type="number" value={form.optional_price_change_pct} onChange={(event) => setForm({ ...form, optional_price_change_pct: Number(event.target.value) })} />
+      <label className="field">
+        <span>可选上报阈值</span>
+        <div className="input-shell">
+          <input
+            type="number"
+            value={form.optional_price_change_pct}
+            onChange={(event) => setForm({ ...form, must_report_price_change_pct: form.must_report_price_change_pct, optional_price_change_pct: Number(event.target.value) })}
+          />
+          <em>%</em>
+        </div>
       </label>
-      <button onClick={() => void onSave(form)}>保存阈值</button>
+      <button className="secondary-button" onClick={() => void onSave(form)}>
+        保存阈值
+      </button>
     </section>
   );
 }

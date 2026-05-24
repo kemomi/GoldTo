@@ -13,6 +13,9 @@ const initialBrief: Brief = {
       summary_zh: "Initial summary",
       market: "US",
       source_url: "https://example.com/initial",
+      source_type: "competitor_official",
+      fetch_status: "live",
+      fallback_reason: null,
     },
     {
       event_id: "event-secondary",
@@ -20,6 +23,9 @@ const initialBrief: Brief = {
       summary_zh: "Secondary summary",
       market: "US",
       source_url: "https://example.com/secondary",
+      source_type: "competitor_official",
+      fetch_status: "live",
+      fallback_reason: null,
     },
   ],
   compliance_alerts: ["Initial compliance"],
@@ -30,6 +36,12 @@ const initialBrief: Brief = {
     marketing: "Marketing action",
   },
   manual_review: [],
+  source_summary: {
+    total_sources: 6,
+    live_count: 1,
+    fallback_count: 5,
+    categories: ["competitor_official", "mall_official"],
+  },
 };
 
 const refreshedBrief: Brief = {
@@ -41,6 +53,9 @@ const refreshedBrief: Brief = {
       summary_zh: "Refreshed summary",
       market: "US",
       source_url: "https://example.com/refreshed",
+      source_type: "platform_announcement",
+      fetch_status: "fixture_fallback",
+      fallback_reason: "live sources disabled",
     },
   ],
   compliance_alerts: ["Refreshed compliance"],
@@ -51,6 +66,12 @@ const refreshedBrief: Brief = {
     marketing: "Marketing action refreshed",
   },
   manual_review: [],
+  source_summary: {
+    total_sources: 6,
+    live_count: 0,
+    fallback_count: 6,
+    categories: ["platform_announcement", "regulation_update"],
+  },
 };
 
 describe("App threshold save refresh", () => {
@@ -76,17 +97,13 @@ describe("App threshold save refresh", () => {
       askQuestion,
     };
 
-    const { container } = render(<App api={api as never} />);
+    render(<App api={api as never} />);
 
-    expect(await screen.findByText("Initial top event")).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /Initial top event/ })).toBeTruthy();
 
-    const firstQuestionButton = container.querySelector(".question-list button");
-    const simulateButton = container.querySelector(".center-panel section > button:last-of-type");
-    const saveButton = container.querySelector(".right-panel .card button");
-
-    if (!firstQuestionButton || !simulateButton || !saveButton) {
-      throw new Error("Expected app controls to be rendered");
-    }
+    const firstQuestionButton = screen.getByRole("button", { name: /今日五大重点市场里/ });
+    const simulateButton = screen.getByRole("button", { name: "开始模拟" });
+    const saveButton = screen.getByRole("button", { name: "保存阈值" });
 
     fireEvent.click(firstQuestionButton);
     expect(await screen.findByText("Stale answer")).toBeTruthy();
@@ -94,15 +111,15 @@ describe("App threshold save refresh", () => {
     fireEvent.click(simulateButton);
     expect(await screen.findByText("Simulation for event-initial")).toBeTruthy();
 
-    const secondaryEventButton = screen.getByRole("button", { name: "Secondary event" });
+    const secondaryEventButton = screen.getByRole("button", { name: /Secondary event/ });
     fireEvent.click(secondaryEventButton);
     fireEvent.click(saveButton);
 
     await waitFor(() => expect(getBrief).toHaveBeenCalledTimes(2));
-    expect(await screen.findByText("Refreshed top event")).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /Refreshed top event/ })).toBeTruthy();
     expect(screen.queryByText("Stale answer")).toBeNull();
     expect(screen.queryByText("Simulation for event-initial")).toBeNull();
-    expect(screen.getByRole("button", { name: "Refreshed top event" }).className).toContain("selected");
+    expect(screen.getByRole("button", { name: /Refreshed top event/ }).className).toContain("selected");
 
     fireEvent.click(simulateButton);
 

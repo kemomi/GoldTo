@@ -13,6 +13,9 @@ const api = {
         summary_zh: "周生生在香港尖沙咀核心婚嫁商圈推出 8% 限时优惠。",
         market: "HK",
         source_url: "https://example.com/hk-csg-pricecut",
+        source_type: "competitor_official",
+        fetch_status: "fixture_fallback",
+        fallback_reason: "live sources disabled",
       },
     ],
     compliance_alerts: ["美国贵金属标识与钻石溯源内容需持续关注。"],
@@ -23,6 +26,18 @@ const api = {
       marketing: "市场策略岗同步检查婚嫁黄金内容方向与投放素材。",
     },
     manual_review: [],
+    source_summary: {
+      total_sources: 6,
+      live_count: 0,
+      fallback_count: 6,
+      categories: [
+        "competitor_official",
+        "industry_news",
+        "mall_official",
+        "platform_announcement",
+        "regulation_update",
+      ],
+    },
   }),
   getThresholds: async () => ({ must_report_price_change_pct: 5, optional_price_change_pct: 2 }),
   updateThresholds: async () => ({ must_report_price_change_pct: 6, optional_price_change_pct: 3 }),
@@ -40,8 +55,11 @@ describe("App", () => {
   it("renders the top event and simulate action", async () => {
     render(<App api={api as never} />);
 
-    expect(await screen.findByText("周生生尖沙咀婚嫁黄金限时 8% 优惠")).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /周生生尖沙咀婚嫁黄金限时 8% 优惠/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "开始模拟" })).toBeTruthy();
-    expect(screen.getByText("今日五大市场整体竞争烈度偏高。")).toBeTruthy();
+    expect(screen.getAllByText("今日五大市场整体竞争烈度偏高。").length).toBeGreaterThan(0);
+    expect(screen.getByText("example.com")).toBeTruthy();
+    expect(screen.getByText("竞品官方")).toBeTruthy();
+    expect(screen.getByText("降级到本地证据")).toBeTruthy();
   });
 });
