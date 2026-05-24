@@ -43,7 +43,12 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "llm_mode": "mock" if settings.is_mock else "real",
+        "model": settings.llm_model_name,
+        "zep_enabled": bool(settings.zep_api_key),
+    }
 
 
 if __name__ == "__main__":

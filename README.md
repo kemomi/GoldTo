@@ -182,6 +182,19 @@ docker compose up -d
 
 ### Mock 模式
 
+```bash
+cd ~/GoldTo
+
+# 解压覆盖修复文件
+tar -xzf GoldTo-fix.tar.gz
+
+# 安装前端依赖（只需做一次）
+cd frontend && npm install --legacy-peer-deps && cd ..
+
+# 启动（无需任何 API Key）
+bash dev.sh
+```
+
 **不填写 API Key 也可以完整体验所有功能。**
 
 当 `LLM_API_KEY` 为空或为占位符时，系统自动切换到 Mock 模式：
@@ -454,4 +467,5 @@ MIT License © 2025 GoldTo Contributors
 **如果这个项目对你有帮助，欢迎 Star ⭐**
 
 </div>
+# GoldTo
 # GoldTo

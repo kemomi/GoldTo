@@ -14,13 +14,31 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import AsyncGenerator, Optional
 
-from openai import AsyncOpenAI
-
 from config import settings
 from graph.graph_builder import GraphBuilder
 from agents.persona_agent import PersonaAgent, generate_personas
 from agents.report_agent import ReportAgent
 from memory.zep_memory import MemoryManager
+
+# ── LLM 客户端选择（有 Key 用真实，无 Key 用 Mock）────────────────────────────
+_MOCK_KEYS = {"", "sk-placeholder", "your_api_key_here", "your_api_key"}
+
+def _is_mock() -> bool:
+    key = (settings.llm_api_key or "").strip()
+    return key in _MOCK_KEYS or key.startswith("your_")
+
+def _build_llm():
+    if _is_mock():
+        from utils.mock_client import MockAsyncOpenAI
+        print("[LLM] ⚡ Mock 模式已启动（无需 API Key，完整功能体验）")
+        return MockAsyncOpenAI()
+    else:
+        from openai import AsyncOpenAI
+        print(f"[LLM] 🌐 连接真实 LLM: {settings.llm_base_url} model={settings.llm_model_name}")
+        return AsyncOpenAI(
+            api_key=settings.llm_api_key,
+            base_url=settings.llm_base_url,
+        )
 
 
 class SimStatus(str, Enum):
@@ -77,15 +95,12 @@ class SimulationEngine:
 
     def __init__(self):
         self._sessions: dict[str, Session] = {}
-        self._llm: Optional[AsyncOpenAI] = None
+        self._llm = None
         self._memory: Optional[MemoryManager] = None
 
-    def _get_llm(self) -> AsyncOpenAI:
+    def _get_llm(self):
         if self._llm is None:
-            self._llm = AsyncOpenAI(
-                api_key=settings.llm_api_key,
-                base_url=settings.llm_base_url,
-            )
+            self._llm = _build_llm()
         return self._llm
 
     def _get_memory(self) -> MemoryManager:
