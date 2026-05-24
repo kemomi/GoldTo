@@ -122,6 +122,8 @@ cd GoldTo
 **第 2 步：配置环境变量**
 
 ```bash
+# 安装依赖
+pip install -r requirements.txt
 cp .env.example .env
 ```
 
