@@ -192,8 +192,16 @@ async def get_worldmonitor_sources():
 async def filter_worldmonitor_sources():
     """Fetch WorldMonitor digest buckets and classify them for CTF use."""
     try:
-        return await filter_worldmonitor_digest()
+        result = await filter_worldmonitor_digest()
+        if result.get("summary", {}).get("total", 0) == 0 and result.get("errors"):
+            raise HTTPException(502, {
+                "message": "WorldMonitor 返回 502，未能拉取任何可筛选信息。请重启 GoldTo 后端并确认 WorldMonitor 正常运行。",
+                "errors": result.get("errors"),
+            })
+        return result
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(502, f"WorldMonitor 筛选失败：{e}") from e
 
 

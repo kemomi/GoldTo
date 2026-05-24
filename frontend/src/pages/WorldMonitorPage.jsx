@@ -96,13 +96,17 @@ export default function WorldMonitorPage() {
     try {
       const result = await filterWorldMonitor()
       setData(result)
+      if ((result.summary?.total ?? 0) === 0 && result.errors && Object.keys(result.errors).length) {
+        setError(`WorldMonitor 拉取失败：${Object.entries(result.errors).map(([k, v]) => `${k}: ${String(v).split('\n')[0]}`).join('；')}`)
+      }
       const defaults = new Set([
         ...(result.selected || []).map(item => item.id),
         ...(result.watchlist || []).filter(item => item.priority_score >= 0.58).map(item => item.id),
       ])
       setSelectedIds(defaults)
     } catch (e) {
-      setError(e.response?.data?.detail || e.message)
+      const detail = e.response?.data?.detail
+      setError(typeof detail === 'object' ? detail.message || JSON.stringify(detail) : detail || e.message)
     } finally {
       setLoading(false)
     }

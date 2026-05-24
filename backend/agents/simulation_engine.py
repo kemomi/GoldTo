@@ -34,10 +34,12 @@ def _build_llm():
         return MockAsyncOpenAI()
     else:
         from openai import AsyncOpenAI
+        import httpx
         print(f"[LLM] 🌐 连接真实 LLM: {settings.llm_base_url} model={settings.llm_model_name}")
         return AsyncOpenAI(
             api_key=settings.llm_api_key,
             base_url=settings.llm_base_url,
+            http_client=httpx.AsyncClient(timeout=90.0, trust_env=False),
         )
 
 

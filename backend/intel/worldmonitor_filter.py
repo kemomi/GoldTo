@@ -258,28 +258,24 @@ class FilteredSignal:
 
 async def fetch_worldmonitor_digest() -> dict[str, Any]:
     base_url = settings.worldmonitor_base_url.rstrip("/")
+    base_urls = _candidate_base_urls(base_url)
     raw: dict[str, Any] = {}
     events: list[WorldMonitorEvent] = []
     errors: dict[str, str] = {}
 
-    async with httpx.AsyncClient(timeout=settings.worldmonitor_timeout) as client:
-        async def fetch_variant(variant: str, buckets: tuple[str, ...]) -> tuple[str, dict[str, Any] | None, list[WorldMonitorEvent], str | None]:
-            url = f"{base_url}/api/news/v1/list-feed-digest"
-            try:
-                resp = await client.get(url, params={"variant": variant, "lang": "en"})
-                resp.raise_for_status()
-                data = resp.json()
-                return variant, data, _extract_events(data, variant, buckets), None
-            except Exception as exc:
-                return variant, None, [], str(exc)
-
+    async with httpx.AsyncClient(
+        timeout=settings.worldmonitor_timeout,
+        trust_env=False,
+        headers={"Accept": "application/json", "User-Agent": "GoldTo-WorldMonitor-Bridge/1.0"},
+    ) as client:
         results = await asyncio.gather(
-            *(fetch_variant(variant, buckets) for variant, buckets in WATCHED_BUCKETS.items())
+            *(_fetch_variant_with_retry(client, base_urls, variant, buckets) for variant, buckets in WATCHED_BUCKETS.items())
         )
 
-    for variant, data, variant_events, error in results:
+    for variant, data, variant_events, error, used_base_url in results:
         if data is not None:
             raw[variant] = data
+            base_url = used_base_url or base_url
         if variant_events:
             events.extend(variant_events)
         if error:
@@ -287,11 +283,50 @@ async def fetch_worldmonitor_digest() -> dict[str, Any]:
 
     return {
         "base_url": base_url,
+        "bridge": {
+            "trust_env": False,
+            "candidate_base_urls": base_urls,
+            "mode": "parallel-retry-no-proxy",
+        },
         "watched_buckets": WATCHED_BUCKETS,
         "events": [e.to_dict() for e in events],
         "raw_counts": _count_raw(raw),
         "errors": errors,
     }
+
+
+async def _fetch_variant_with_retry(
+    client: httpx.AsyncClient,
+    base_urls: list[str],
+    variant: str,
+    buckets: tuple[str, ...],
+) -> tuple[str, dict[str, Any] | None, list[WorldMonitorEvent], str | None, str | None]:
+    """WorldMonitor may return 502 under concurrent refresh; use serial retry for stability."""
+    last_error = ""
+    for base_url in base_urls:
+        url = f"{base_url}/api/news/v1/list-feed-digest"
+        for attempt in range(2):
+            try:
+                resp = await client.get(url, params={"variant": variant, "lang": "en"})
+                resp.raise_for_status()
+                data = resp.json()
+                return variant, data, _extract_events(data, variant, buckets), None, base_url
+            except Exception as exc:
+                last_error = f"{base_url}: {exc}"
+                if attempt == 0:
+                    await asyncio.sleep(1.5)
+    return variant, None, [], last_error, None
+
+
+def _candidate_base_urls(base_url: str) -> list[str]:
+    candidates = [base_url]
+    if base_url in {"http://localhost:3000", "http://127.0.0.1:3000"}:
+        candidates.extend(["http://localhost:3000", "http://[::1]:3000"])
+    deduped: list[str] = []
+    for item in candidates:
+        if item not in deduped:
+            deduped.append(item)
+    return deduped
 
 
 async def filter_worldmonitor_digest() -> dict[str, Any]:
@@ -307,6 +342,7 @@ async def filter_worldmonitor_digest() -> dict[str, Any]:
 
     return {
         "source": digest["base_url"],
+        "bridge": digest.get("bridge", {}),
         "raw_counts": digest["raw_counts"],
         "errors": digest["errors"],
         "summary": {

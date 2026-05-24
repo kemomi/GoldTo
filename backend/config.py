@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # WorldMonitor integration
     worldmonitor_base_url: str = "http://localhost:3000"
-    worldmonitor_timeout: float = 45.0
+    worldmonitor_timeout: float = 120.0
 
     # Paths
     upload_dir: Path = Path("uploads")
