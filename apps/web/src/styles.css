@@ -2,9 +2,9 @@
   font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   color: #10233d;
   background:
-    radial-gradient(circle at top left, rgba(116, 172, 255, 0.22), transparent 28%),
-    radial-gradient(circle at top right, rgba(121, 210, 212, 0.18), transparent 30%),
-    linear-gradient(180deg, #eef5ff 0%, #e7eef8 38%, #eef3f9 100%);
+    radial-gradient(circle at top left, rgba(116, 172, 255, 0.16), transparent 26%),
+    radial-gradient(circle at top right, rgba(121, 210, 212, 0.14), transparent 28%),
+    linear-gradient(180deg, #edf3fb 0%, #e8eef7 38%, #eef2f7 100%);
   line-height: 1.5;
   font-weight: 400;
 }
@@ -56,20 +56,34 @@ a:hover {
 
 .app-shell {
   min-height: 100vh;
-  padding: 24px;
+  padding: 18px;
+}
+
+.dashboard-frame {
+  max-width: 1620px;
+  margin: 0 auto;
+  padding: 14px;
+  border: 1px solid rgba(129, 156, 197, 0.26);
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.54), rgba(243, 247, 252, 0.82)),
+    linear-gradient(135deg, rgba(94, 146, 223, 0.04), transparent);
+  box-shadow:
+    0 28px 64px rgba(35, 70, 126, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
 .app-header {
   position: relative;
   overflow: hidden;
-  margin-bottom: 20px;
-  padding: 24px 28px;
-  border: 1px solid rgba(121, 154, 202, 0.28);
-  border-radius: 28px;
+  margin-bottom: 16px;
+  padding: 16px 18px 18px;
+  border: 1px solid rgba(118, 150, 198, 0.22);
+  border-radius: 24px;
   background:
-    linear-gradient(135deg, rgba(27, 87, 183, 0.9), rgba(73, 153, 219, 0.74) 55%, rgba(144, 207, 227, 0.48)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03));
-  box-shadow: 0 24px 60px rgba(31, 72, 137, 0.18);
+    linear-gradient(180deg, rgba(35, 98, 188, 0.98), rgba(65, 137, 210, 0.92) 48%, rgba(120, 181, 226, 0.72)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04));
+  box-shadow: 0 20px 44px rgba(31, 72, 137, 0.16);
   color: #eff6ff;
 }
 
@@ -83,6 +97,8 @@ a:hover {
   pointer-events: none;
 }
 
+.header-toolbar,
+.header-main,
 .header-copy,
 .header-status,
 .metric-strip {
@@ -90,10 +106,101 @@ a:hover {
   z-index: 1;
 }
 
+.header-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  min-height: 54px;
+  margin: -2px -4px 18px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 58px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #eaf4ff;
+  background: rgba(12, 46, 104, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.brand-lockup strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  color: rgba(246, 250, 255, 0.95);
+}
+
+.toolbar-tabs {
+  display: inline-flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(8, 44, 101, 0.14);
+}
+
+.toolbar-tab {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(238, 246, 255, 0.74);
+}
+
+.toolbar-tab.active {
+  color: #154281;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 18px rgba(16, 54, 110, 0.12);
+}
+
+.toolbar-clock {
+  justify-self: end;
+  text-align: right;
+}
+
+.toolbar-clock span {
+  display: block;
+  font-size: 11px;
+  color: rgba(243, 249, 255, 0.8);
+}
+
+.toolbar-clock strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.header-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+}
+
 .header-copy h1 {
-  margin: 6px 0 10px;
-  font-size: 34px;
+  margin: 8px 0 10px;
+  font-size: 36px;
   line-height: 1.15;
+  text-shadow: 0 2px 14px rgba(19, 58, 119, 0.18);
 }
 
 .eyebrow,
@@ -102,56 +209,61 @@ a:hover {
   font-size: 12px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(238, 246, 255, 0.8);
+  color: rgba(240, 247, 255, 0.88);
 }
 
 .header-summary {
   max-width: 900px;
   margin: 0;
   font-size: 15px;
-  color: rgba(244, 248, 255, 0.92);
+  color: rgba(247, 251, 255, 0.96);
 }
 
 .header-status {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  margin-top: 20px;
 }
 
 .status-chip {
-  min-width: 148px;
-  padding: 10px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.1);
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(248, 252, 255, 0.94), rgba(232, 242, 255, 0.9));
   backdrop-filter: blur(12px);
+  color: #1b4f95;
+}
+
+.status-chip.primary {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(236, 246, 255, 0.94));
 }
 
 .status-label {
   display: block;
   margin-bottom: 4px;
   font-size: 12px;
-  color: rgba(239, 246, 255, 0.76);
+  color: #6282aa;
 }
 
 .status-chip strong {
   font-size: 18px;
   font-weight: 700;
+  color: #1a4a8c;
 }
 
 .metric-strip {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 20px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
 }
 
 .metric-card {
-  padding: 16px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.12);
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(248, 252, 255, 0.94), rgba(232, 242, 255, 0.88));
   backdrop-filter: blur(14px);
 }
 
@@ -162,24 +274,25 @@ a:hover {
 
 .metric-card span {
   font-size: 13px;
-  color: rgba(239, 246, 255, 0.8);
+  color: #6987ad;
 }
 
 .metric-card strong {
   display: block;
-  margin: 8px 0 6px;
-  font-size: 30px;
+  margin: 7px 0 4px;
+  font-size: 26px;
   line-height: 1;
+  color: #1b4f95;
 }
 
 .metric-card small {
-  color: rgba(239, 246, 255, 0.72);
+  color: #88a0bf;
 }
 
 .layout {
   display: grid;
-  grid-template-columns: 360px minmax(0, 1fr) 380px;
-  gap: 20px;
+  grid-template-columns: 332px minmax(0, 1fr) 360px;
+  gap: 16px;
   align-items: start;
 }
 
@@ -192,10 +305,10 @@ a:hover {
 .metric-mini,
 .recommendation-card {
   border: 1px solid rgba(132, 163, 205, 0.24);
-  border-radius: 22px;
-  background: rgba(251, 254, 255, 0.82);
-  box-shadow: 0 18px 40px rgba(39, 80, 142, 0.08);
-  backdrop-filter: blur(16px);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 250, 255, 0.92));
+  box-shadow: 0 16px 36px rgba(39, 80, 142, 0.06);
+  backdrop-filter: blur(10px);
 }
 
 .sidebar,
@@ -205,26 +318,26 @@ a:hover {
 }
 
 .sidebar {
-  padding: 22px;
+  padding: 18px;
 }
 
 .center-panel {
   display: grid;
-  gap: 18px;
+  gap: 14px;
 }
 
 .right-panel {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   align-content: start;
 }
 
 .hero-card {
-  padding: 22px;
-  border-radius: 24px;
+  padding: 18px;
+  border-radius: 20px;
   background:
-    linear-gradient(180deg, rgba(33, 101, 190, 0.12), rgba(255, 255, 255, 0.82)),
-    linear-gradient(135deg, rgba(121, 210, 212, 0.22), transparent 55%);
+    linear-gradient(180deg, rgba(33, 101, 190, 0.1), rgba(255, 255, 255, 0.9)),
+    linear-gradient(135deg, rgba(121, 210, 212, 0.16), transparent 55%);
 }
 
 .hero-card .section-kicker,
@@ -264,8 +377,8 @@ a:hover {
 }
 
 .signal-grid article {
-  padding: 14px 16px;
-  border-radius: 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.68);
   border: 1px solid rgba(129, 166, 211, 0.16);
 }
@@ -323,10 +436,10 @@ a:hover {
 
 .event-card {
   width: 100%;
-  padding: 16px 18px;
+  padding: 14px 16px;
   border: 1px solid rgba(125, 161, 206, 0.22);
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(237, 245, 255, 0.9));
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 247, 255, 0.94));
   color: #17304f;
   text-align: left;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
@@ -406,9 +519,13 @@ a:hover {
   gap: 12px;
 }
 
+.insight-columns {
+  grid-template-columns: 1fr;
+}
+
 .sub-card,
 .role-card {
-  padding: 16px 18px;
+  padding: 14px 16px;
 }
 
 .sub-card h4,
@@ -430,7 +547,7 @@ a:hover {
 }
 
 .analysis-board {
-  padding: 22px;
+  padding: 18px;
 }
 
 .panel-top {
@@ -438,6 +555,8 @@ a:hover {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(132, 163, 205, 0.16);
 }
 
 .primary-button,
@@ -462,13 +581,13 @@ a:hover {
 .focus-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.95fr);
-  gap: 16px;
-  margin-top: 18px;
+  gap: 14px;
+  margin-top: 16px;
 }
 
 .focus-card {
-  padding: 18px 20px;
-  border-radius: 22px;
+  padding: 16px 18px;
+  border-radius: 18px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(236, 244, 255, 0.82)),
     linear-gradient(135deg, rgba(115, 173, 255, 0.12), transparent);
@@ -476,7 +595,7 @@ a:hover {
 
 .focus-card h3 {
   margin: 10px 0 0;
-  font-size: 24px;
+  font-size: 22px;
   color: #112a48;
 }
 
@@ -494,9 +613,9 @@ a:hover {
   display: flex;
   align-items: end;
   gap: 8px;
-  height: 120px;
-  padding: 18px 16px 12px;
-  border-radius: 18px;
+  height: 132px;
+  padding: 16px 14px 12px;
+  border-radius: 16px;
   background:
     linear-gradient(180deg, rgba(221, 236, 255, 0.7), rgba(255, 255, 255, 0.85)),
     linear-gradient(90deg, rgba(116, 172, 255, 0.16), rgba(121, 210, 212, 0.16));
@@ -523,7 +642,7 @@ a:hover {
 }
 
 .metric-mini {
-  padding: 12px 14px;
+  padding: 10px 12px;
 }
 
 .metric-mini strong {
@@ -545,9 +664,9 @@ a:hover {
 }
 
 .question-panel {
-  margin-top: 18px;
-  padding: 18px 20px;
-  border-radius: 22px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: 18px;
   background: rgba(245, 250, 255, 0.76);
   border: 1px solid rgba(132, 163, 205, 0.18);
 }
@@ -559,7 +678,7 @@ a:hover {
 }
 
 .question-list button {
-  padding: 11px 14px;
+  padding: 10px 13px;
   border: 1px solid rgba(133, 165, 204, 0.24);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.88);
@@ -567,8 +686,8 @@ a:hover {
 }
 
 .answer-box {
-  margin-top: 18px;
-  padding: 20px;
+  margin-top: 16px;
+  padding: 18px;
 }
 
 .answer-head {
@@ -592,7 +711,7 @@ a:hover {
 }
 
 .card {
-  padding: 20px;
+  padding: 18px;
 }
 
 .control-card,
@@ -633,8 +752,8 @@ a:hover {
 }
 
 .source-meta {
-  padding: 12px 14px;
-  border-radius: 16px;
+  padding: 11px 13px;
+  border-radius: 14px;
   background: rgba(241, 247, 255, 0.92);
 }
 
@@ -645,12 +764,12 @@ a:hover {
 }
 
 .plan-card {
-  max-height: calc(100vh - 210px);
-  overflow: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 .option-card {
-  padding: 16px 18px;
+  padding: 14px 16px;
 }
 
 .option-card.recommended {
@@ -717,7 +836,7 @@ a:hover {
 }
 
 .recommendation-card {
-  padding: 18px 20px;
+  padding: 16px 18px;
   background: linear-gradient(135deg, rgba(224, 239, 255, 0.92), rgba(255, 255, 255, 0.95));
 }
 
@@ -733,11 +852,16 @@ a:hover {
 
 @media (max-width: 1400px) {
   .layout {
-    grid-template-columns: 320px minmax(0, 1fr) 340px;
+    grid-template-columns: 300px minmax(0, 1fr) 320px;
   }
 
   .metric-strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .header-toolbar,
+  .header-main {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -750,6 +874,10 @@ a:hover {
     grid-template-columns: 1fr;
   }
 
+  .metric-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .plan-card {
     max-height: none;
   }
@@ -757,7 +885,12 @@ a:hover {
 
 @media (max-width: 720px) {
   .app-shell {
-    padding: 14px;
+    padding: 10px;
+  }
+
+  .dashboard-frame {
+    padding: 10px;
+    border-radius: 22px;
   }
 
   .app-header,
@@ -768,6 +901,8 @@ a:hover {
   }
 
   .panel-top,
+  .header-toolbar,
+  .header-main,
   .header-status,
   .section-heading,
   .event-card-meta,
@@ -782,5 +917,10 @@ a:hover {
   .metric-mini-grid,
   .signal-grid {
     grid-template-columns: 1fr;
+  }
+
+  .toolbar-clock {
+    justify-self: start;
+    text-align: left;
   }
 }
