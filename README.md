@@ -1,471 +1,563 @@
-<div align="center">
+# CTF Strategy Radar
 
-# GoldTo
+**周大福海外市场战略情报 Agent**
 
-**简洁通用的群体智能引擎，预测黄金、石油等价格走势**
+面向珠宝集团海外业务团队的每日市场战略雷达。系统基于上传的企业调研材料和公开信息线索，自动构建海外市场知识图谱，生成多位企业专家 Agent，围绕机会、风险、竞品、产品、渠道、合规和供应链进行会商，最终输出可追问、可复现、可用于管理层快速判断的战略简报。
 
-*A Simple and Universal Swarm Intelligence Engine — Predicting Anything*
-
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python)](https://python.org)
-[![Node](https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js)](https://nodejs.org)
-[![License](https://img.shields.io/badge/License-MIT-orange)](LICENSE)
-[![Mock Mode](https://img.shields.io/badge/Mock%20Mode-支持无Key体验-yellow)](#mock-模式)
-
-[在线 Demo](https://kemomi.github.io/GoldTo/) · [快速开始](#-快速开始) · [工作原理](#-工作原理) · [API 文档](#-api-文档)
-
-</div>
+> 当前版本是赛题 MVP：第一阶段不接入企业内部系统，只基于上传材料、公开信息结构和 Mock/LLM 推理演示完整工作流。
 
 ---
 
-## ⚡ 项目概述
+## 项目故事
 
-**GoldTo** 是一款基于多智能体技术的新一代 AI 预测引擎。
+周大福正在从以大中华区为核心的珠宝零售集团，走向全球化珠宝品牌。它的海外市场虽然门店数量还不大，但战略重要性正在上升：东南亚是现有阵地，日韩和北美需要持续验证品牌认知，中东和澳洲是潜在新增长市场。
 
-你只需输入**种子材料**（突发新闻、政策草案、金融信号、财报数据，甚至一段小说故事），系统将自动：
+企业真实决策中，管理层每天并不只需要“预测一个价格”，而是需要快速知道：
 
-1. **构建知识图谱** — 从种子文本中提取实体与关系，形成 GraphRAG 知识网络
-2. **生成智能体群组** — 创建具备独立人格、长期记忆与行为逻辑的角色（机构投资者、央行官员、散户、分析师…）
-3. **运行平行仿真** — 在数字沙盘中让智能体自由博弈、相互影响、产生涌现
-4. **输出预测报告** — 由 ReportAgent 综合所有仿真数据，生成带置信区间的预测结论
-5. **支持深度对话** — 与任意智能体或 ReportAgent 展开对话，深入追问
+- 哪些海外市场发生了值得关注的变化
+- 这些变化对周大福是机会、风险还是待观察事项
+- 哪些部门需要行动：管理层、海外运营、产品、品牌、公关、供应链、合规法务
+- 结论来自哪里，可信度如何
+- 是否需要升级为管理层预警
 
-> **让未来在数字沙盘中预演，助决策在百战模拟后胜出。**
-
----
-
-## 🖼️ 系统截图
-
-> 界面采用 Retro-Futuristic 指挥台风格，深空黑 + 黄金信号 + 青色轨迹配色。
-
-| 区域 | 内容 |
-|------|------|
-| **左侧面板** | 仿真配置、情绪实况仪表盘、进度条 |
-| **中央主区** | 实时推演流 / 知识图谱 / 预测报告 / 深度对话（Tab 切换） |
-| **右侧面板** | 智能体群组列表，点击任意角色进入对话 |
+因此，本项目将原本的通用多智能体预测引擎改造成 **周大福海外市场战略情报 Agent**。它更像一个“每天早上给企业管理层交付简报的智能分析层”，而不是单纯聊天机器人。
 
 ---
 
-## 🔄 工作原理
+## 核心能力
 
-```
-种子材料（新闻/报告/故事）
-        │
-        ▼
-┌─────────────────────┐
-│  1. 图谱构建         │  GraphRAG 抽取实体关系，注入个体记忆
-│     KnowledgeGraph  │
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  2. 智能体生成       │  8 种原型角色，按影响力权重分配
-│     AgentFactory    │  每个智能体有独立人格、短期+长期记忆
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  3. 多轮仿真         │  每轮：世界事件注入 → 智能体感知反应
-│     SimulationLoop  │  → 情绪传染（社会涌现）→ 状态更新
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  4. 报告生成         │  ReportAgent 全知视角分析涌现行为
-│     ReportAgent     │  输出带概率区间的预测结论
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  5. 深度互动         │  与任意智能体 / ReportAgent 对话
-│     ChatInterface   │  「上帝视角」动态注入变量
-└─────────────────────┘
-```
+### 1. 上传企业资料
 
-### 8 种智能体原型
+支持上传 `.txt`、`.md`、`.pdf` 作为种子材料，例如：
 
-| 原型 | 影响力 | 核心特征 |
-|------|--------|----------|
-| 央行官员 | 95% | 稳定优先、货币工具、信号博弈 |
-| 政策制定者 | 90% | 保守、系统性思维、信息滞后 |
-| 机构投资者 | 85% | 理性、数据驱动、长线思维 |
-| 对冲基金经理 | 80% | 逆向思维、高杠杆、短期博弈 |
-| 地缘政治分析师 | 65% | 风险感知、历史类比 |
-| 媒体分析师 | 60% | 叙事驱动、放大效应 |
-| 大宗商品交易员 | 55% | 技术分析、供需敏感 |
-| 散户交易者 | 30% | 情绪化、跟风、贪婪/恐惧 |
+- 周大福海外市场调研报告
+- 竞品调研材料
+- 行业报告摘要
+- 市场进入分析
+- 政策和合规资料
 
----
+### 2. 构建海外市场知识图谱
 
-## 🚀 快速开始
+系统会从材料中抽取：
 
-### 前置要求
+- 市场：东南亚、日韩、北美、中东、澳洲
+- 品牌与竞品：周大福、Cartier、Tiffany、Bvlgari、周生生、六福等
+- 产品：传承系列、Hearts On Fire、MONOLOGUE、SOINLOVE、D-ONE 定制
+- 风险：金价、汇率、贵金属认证、AML、数据隐私、供应链、ESG、舆情
+- 渠道：机场店、高端购物中心、电商平台、旅游零售
 
-| 工具 | 版本 | 检查命令 |
-|------|------|----------|
-| Node.js | ≥ 18 | `node -v` |
-| Python | 3.11 ~ 3.12 | `python3 --version` |
-| uv | 最新版 | `uv --version` |
+### 3. 生成企业专家 Agent
 
-> **安装 uv**：`curl -LsSf https://astral.sh/uv/install.sh | sh`
+MVP 默认围绕以下职能视角生成 Agent：
 
----
+| Agent | 关注点 |
+|---|---|
+| 东南亚区域市场 Agent | 新加坡、马来西亚、泰国、旅游零售、华人消费 |
+| 日韩市场 Agent | 日本、韩国、年轻客群、设计审美、K 金和钻石 |
+| 北美市场 Agent | 美国、加拿大、华人市场、高端商圈 |
+| 中东与澳洲新市场 Agent | 迪拜、多哈、澳大利亚、市场进入优先级 |
+| 金价与汇率风险 Agent | 国际金价、汇率、本地定价、毛利影响 |
+| 竞品情报 Agent | Cartier、Tiffany、Bvlgari、周生生、六福、本土品牌 |
+| 产品与文化趋势 Agent | 古法黄金、婚嫁珠宝、D-ONE、Hearts On Fire、文化本地化 |
+| 渠道与电商平台 Agent | 机场店、购物中心、Shopee、Lazada、Rakuten、Qoo10 |
+| 合规与监管 Agent | 贵金属认证、AML/KYC、广告法、数据隐私、消费者保护 |
+| 供应链风险 Agent | 钻石来源、T MARK、物流、供应商、ESG |
+| 品牌声誉与舆情 Agent | 社媒舆情、产品评价、服务投诉、代言人风险 |
+| 战略简报总控 Agent | 汇总判断、生成管理层简报和部门行动清单 |
 
-### 方式一：源码部署（推荐）
+### 4. 多 Agent 情报会商
 
-**第 1 步：克隆项目**
+系统会让不同专家 Agent 进行多轮会商。每轮会商关注：
 
-```bash
-git clone https://github.com/kemomi/GoldTo.git
-cd GoldTo
+- 市场变化
+- 机会/风险/待观察分类
+- 业务影响
+- 建议负责部门
+- 是否需要补充来源验证
+- 是否需要升级为管理层预警
+
+### 5. 输出每日战略简报
+
+最终报告结构固定为：
+
+```md
+# 周大福海外市场每日战略简报
+
+## 今日总览
+## 高优先级预警
+## 各区域市场变化
+## 竞品动态
+## 产品与消费者趋势
+## 渠道与电商机会
+## 合规与供应链风险
+## 建议行动清单
+## 信息来源与可信度
 ```
 
-**第 2 步：配置环境变量**
+### 6. 追问验证
+
+简报生成后，可以继续追问：
+
+- 为什么中东市场优先级升高？
+- 哪些竞品动作最值得关注？
+- 金价上涨对产品组合有什么影响？
+- 今天哪些部门需要行动？
+- 这个结论的可信度如何？
+- 东南亚市场应该先开店还是先做电商试水？
+
+---
+
+## 系统工作流
+
+```text
+上传调研材料 / 公开资料
+        |
+        v
+构建海外市场知识图谱
+        |
+        v
+生成企业专家 Agent
+        |
+        v
+多轮战略情报会商
+        |
+        v
+战略简报总控 Agent 汇总
+        |
+        v
+输出每日海外市场战略简报
+        |
+        v
+用户追问、验证、下载报告
+```
+
+---
+
+## 快速复现
+
+### 环境要求
+
+| 工具 | 推荐版本 |
+|---|---|
+| Python | 3.11 - 3.12 |
+| Node.js | 18+ |
+| uv | 最新版 |
+| npm | 随 Node.js 安装 |
+
+### 1. 配置环境变量
+
+复制环境变量模板：
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env`，填入你的 API Keys（不填则自动进入 [Mock 模式](#mock-模式)）：
+如果没有 API Key，可以不填，系统会自动进入 Mock 模式，仍可完整体验流程。
+
+如果使用阿里百炼 / 通义千问：
 
 ```env
-# LLM API（支持任意 OpenAI 兼容接口）
-LLM_API_KEY=your_api_key_here
+LLM_API_KEY=你的_api_key
 LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 LLM_MODEL_NAME=qwen-plus
+```
 
-# Zep Cloud 长期记忆（可选）
+可选长期记忆：
+
+```env
 ZEP_API_KEY=
 ```
 
-**第 3 步：安装依赖**
+### 2. 安装依赖
 
 ```bash
 npm run setup:all
 ```
 
-这条命令会自动安装：前端 npm 依赖 + 后端 Python 依赖（通过 uv 创建虚拟环境）。
+该命令会安装：
 
-**第 4 步：启动**
+- 前端 React/Vite 依赖
+- 后端 FastAPI/Python 依赖
+
+如果你的环境不能执行 Bash 脚本，也可以分开安装：
+
+```bash
+cd frontend
+npm install
+```
+
+```bash
+cd backend
+uv sync
+```
+
+### 3. 启动项目
+
+一键启动：
 
 ```bash
 npm run dev
 ```
 
+或分开启动：
+
+```bash
+npm run backend
+```
+
+```bash
+npm run frontend
+```
+
+默认地址：
+
 | 服务 | 地址 |
-|------|------|
-| 前端界面 | http://localhost:3000 |
-| 后端 API | http://localhost:5001 |
+|---|---|
+| 前端 | http://localhost:3001 |
+| 后端 | http://localhost:5001 |
+| API 文档 | http://localhost:5001/docs |
 
-也可单独启动：
+---
+
+## 页面复现流程
+
+如果需要接入 WorldMonitor，请先单独启动：
 
 ```bash
-npm run backend    # 仅后端
-npm run frontend   # 仅前端
+cd C:\Users\TYF07\worldmonitor
+npm run dev
 ```
+
+WorldMonitor 默认运行在：
+
+```text
+http://localhost:3000
+```
+
+本项目前端为了避开 WorldMonitor，默认运行在：
+
+```text
+http://localhost:3001
+```
+
+### Step 1：进入首页
+
+打开：
+
+```text
+http://localhost:3001
+```
+
+首页名称应显示：
+
+```text
+CTF Strategy Radar
+```
+
+页面定位为：
+
+```text
+周大福海外市场 · 战略情报雷达
+```
+
+### Step 2：上传调研报告
+
+上传你的调研报告，例如：
+
+```text
+C:\Users\TYF07\Downloads\report.md
+```
+
+支持 `.txt`、`.md`、`.pdf`。
+
+### Step 3：填写情报任务
+
+推荐填写：
+
+```text
+生成周大福今日海外市场战略简报，覆盖东南亚、日韩、北美、中东与澳洲。
+```
+
+也可以使用首页快捷任务：
+
+- 每日简报
+- 新市场进入
+- 产品组合
+- 合规预警
+
+### Step 4：设置会商参数
+
+点击高级设置，可调整：
+
+- 会商轮次：建议 Demo 用 5-20
+- 专家 Agent 数量：建议 10-12
+
+真实 LLM 模式下，轮次和 Agent 越多，耗时和成本越高。
+
+### Step 5：启动战略情报会商
+
+点击：
+
+```text
+启动战略情报会商
+```
+
+系统会依次执行：
+
+1. 构建海外市场知识图谱
+2. 生成企业专家 Agent
+3. 执行多轮战略情报会商
+4. 生成战略简报
+
+### Step 6：查看专家 Agent
+
+会商完成后进入“专家 Agent”页面，可查看：
+
+- 每个 Agent 的职责
+- 当前机会/风险判断
+- 专业领域
+- 最新洞察
+- 会商记录
+
+### Step 7：查看战略简报
+
+进入“战略简报”页面，可查看：
+
+- 今日总览
+- 高优先级预警
+- 区域市场变化
+- 竞品动态
+- 产品与消费者趋势
+- 渠道与电商机会
+- 合规与供应链风险
+- 部门行动清单
+- 信息来源与可信度
+
+也可以点击“下载报告”，导出 Markdown 文件。
+
+### Step 8：追问验证
+
+进入“追问验证”页面，可以问：
+
+```text
+为什么中东市场优先级升高？
+```
+
+```text
+哪些竞品动作最值得关注？
+```
+
+```text
+金价上涨对产品组合有什么影响？
+```
+
+```text
+今天哪些部门需要行动？
+```
+
+系统会基于已生成的简报和专家会商记录回答。
+
+### 可选：从 WorldMonitor 导入情报
+
+在侧边栏点击：
+
+```text
+WM 情报筛选
+```
+
+流程：
+
+1. 确认 WorldMonitor 正在 `http://localhost:3000` 运行。
+2. 点击“拉取并筛选”。
+3. 系统会读取 `full`、`finance`、`commodity` 三个 WorldMonitor digest。
+4. 筛选 Agent 会保留与周大福海外市场相关的信息，分为“高优先级”“待观察”“低相关”。
+5. 人工勾选要保留的情报。
+6. 点击“用已审核情报启动会商”。
+7. 系统会自动创建 GoldTo 会话，并进入会商控制台。
 
 ---
 
-### 方式二：Docker 部署
+## Mock 模式说明
 
-```bash
-# 1. 配置环境变量
-cp .env.example .env   # 编辑填入 Keys
+当 `.env` 中 `LLM_API_KEY` 为空或为占位值时，系统自动进入 Mock 模式。
 
-# 2. 一键启动
-docker compose up -d
-```
+Mock 模式会生成一套贴合周大福海外市场的模拟结果，包括：
 
-- 前端映射端口：`3000`
-- 后端映射端口：`5001`
+- 周大福海外市场知识图谱
+- 企业专家 Agent 人设
+- 会商对话
+- 每日战略简报
+- 追问回答
 
----
-
-### Mock 模式
-
-```bash
-cd ~/GoldTo
-
-# 解压覆盖修复文件
-tar -xzf GoldTo-fix.tar.gz
-
-# 安装前端依赖（只需做一次）
-cd frontend && npm install --legacy-peer-deps && cd ..
-
-# 启动（无需任何 API Key）
-bash dev.sh
-```
-
-**不填写 API Key 也可以完整体验所有功能。**
-
-当 `LLM_API_KEY` 为空或为占位符时，系统自动切换到 Mock 模式：
-- 知识图谱返回预置的财经实体网络
-- 智能体根据角色类型返回差异化的模拟反应
-- ReportAgent 生成含情景概率表的完整报告
-- 所有对话接口正常响应
-
-健康检查接口会标注当前模式：
-
-```json
-{ "ok": true, "llm_mode": "mock", "model": "qwen-plus" }
-```
+这适合答辩、演示和无 API Key 环境下复现完整流程。
 
 ---
 
-## 🔑 API Keys 获取
+## API 概览
 
-### LLM（必须二选一）
+### 创建会话
 
-**选项 A：阿里百炼（推荐，国内稳定）**
-- 注册：https://bailian.console.aliyun.com/
-- 推荐模型：`qwen-plus`（成本低、效果好）
-- BASE_URL：`https://dashscope.aliyuncs.com/compatible-mode/v1`
-- 注意：单次完整仿真（50 智能体 × 40 轮）约消耗 5-10 元额度，建议先用 20 智能体 × 10 轮试跑
-
-**选项 B：其他兼容接口**
-
-| 平台 | BASE_URL |
-|------|----------|
-| OpenAI | `https://api.openai.com/v1` |
-| DeepSeek | `https://api.deepseek.com/v1` |
-| Moonshot | `https://api.moonshot.cn/v1` |
-| Groq | `https://api.groq.com/openai/v1` |
-
-### Zep Cloud（可选）
-
-用于智能体的持久化长期记忆，未配置时退化为进程内内存存储。
-
-- 注册：https://app.getzep.com/
-- 免费额度足够日常使用
-
----
-
-## 📁 项目结构
-
-```
-GoldTo/
-├── package.json               # 根 npm 脚本（dev / setup / build）
-├── .env.example               # 环境变量模板
-├── docker-compose.yml         # Docker 编排配置
-│
-├── frontend/                  # 前端（纯 HTML + Vanilla JS）
-│   └── index.html             # 单文件 SPA，Retro-Futuristic 风格
-│       ├── 仿真配置面板
-│       ├── 实时推演流（Round Feed + 涌现检测）
-│       ├── SVG 知识图谱可视化
-│       ├── Markdown 报告渲染
-│       └── 多目标对话界面
-│
-└── backend/                   # 后端（Flask REST API）
-    ├── app.py                 # 主入口，11 个 API 路由
-    ├── agents/
-    │   ├── agent.py           # 智能体核心：人格、记忆、感知-反应循环
-    │   └── simulation.py      # 仿真引擎：5 阶段流水线 + 涌现检测
-    ├── graph/
-    │   └── knowledge_graph.py # GraphRAG：实体抽取 + NetworkX 图构建
-    ├── memory/
-    │   └── zep_memory.py      # 记忆管理：Zep Cloud / 内存双模式
-    └── utils/
-        └── llm_client.py      # LLM 客户端：真实调用 + Mock 模式
+```http
+POST /api/sessions
 ```
 
----
-
-## 📡 API 文档
-
-### `GET /api/health`
-
-检查服务状态与 LLM 模式。
-
-```json
-{ "ok": true, "llm_mode": "real", "model": "qwen-plus" }
-```
-
----
-
-### `POST /api/simulate`
-
-启动一次仿真。返回 `sim_id` 用于后续轮询。
-
-**请求体：**
+返回：
 
 ```json
 {
-  "seed_text": "美联储3月FOMC维持利率不变，黄金现货突破2380美元...",
-  "prediction_target": "预测未来6周国际黄金价格走势",
-  "agent_count": 20,
-  "num_rounds": 10
+  "session_id": "abcd1234",
+  "status": "idle"
 }
 ```
 
-| 字段 | 类型 | 默认 | 限制 |
-|------|------|------|------|
-| `seed_text` | string | 必填 | — |
-| `prediction_target` | string | `"预测黄金价格走势"` | — |
-| `agent_count` | int | 20 | 最大 50 |
-| `num_rounds` | int | 10 | 最大 40 |
+### 上传材料
 
-**响应：**
-
-```json
-{ "sim_id": "cf252b12", "message": "仿真已启动" }
+```http
+POST /api/sessions/{session_id}/upload
 ```
 
----
+表单字段：
 
-### `GET /api/simulation/{sim_id}`
+| 字段 | 说明 |
+|---|---|
+| file | 上传的 `.txt` / `.md` / `.pdf` 文件 |
+| prediction_goal | 情报任务描述 |
+| rounds | 会商轮次 |
+| agents_count | 专家 Agent 数量 |
 
-获取仿真状态（轮询直到 `status == "done"`）。
+### 启动会商
+
+```http
+POST /api/sessions/{session_id}/simulate
+```
+
+### 监听实时进度
+
+```http
+GET /api/sessions/{session_id}/stream
+```
+
+使用 SSE 推送：
+
+- 知识图谱构建状态
+- 专家 Agent 生成状态
+- 会商互动记录
+- 简报生成完成事件
+
+### 获取战略简报
+
+```http
+GET /api/sessions/{session_id}/report
+```
+
+### 获取专家 Agent
+
+```http
+GET /api/sessions/{session_id}/agents
+```
+
+### 获取知识图谱
+
+```http
+GET /api/sessions/{session_id}/graph
+```
+
+### 追问验证
+
+```http
+POST /api/sessions/{session_id}/chat
+```
+
+请求：
 
 ```json
 {
-  "id": "cf252b12",
-  "status": "simulating",
-  "progress": 68,
-  "current_round": 6,
-  "total_rounds": 10,
-  "agent_count": 20,
-  "rounds": [...],
-  "sentiment_trend": [
-    { "round": 5, "breakdown": {"看涨": 55, "中性": 25, "看跌": 20}, "dominant": "看涨" }
-  ],
-  "report": "## GoldTo 预测报告\n..."
+  "message": "金价上涨对产品组合有什么影响？",
+  "agent_id": null
 }
 ```
 
-**status 枚举：**`idle` → `building` → `simulating` → `done` / `error`
+如果想和某个具体专家 Agent 对话，把 `agent_id` 设置为对应 Agent ID。
 
 ---
 
-### `GET /api/simulation/{sim_id}/agents`
-
-获取所有智能体当前状态。
-
-```json
-[
-  {
-    "id": "agent_000",
-    "name": "杨娜",
-    "label": "机构投资者",
-    "sentiment": "看涨",
-    "confidence": 0.78,
-    "influence": 0.85,
-    "latest_message": "央行购金信号明确，机构已低调建仓..."
-  }
-]
-```
-
----
-
-### `GET /api/simulation/{sim_id}/graph`
-
-获取知识图谱节点与边，用于前端 SVG 可视化。
-
-```json
-{
-  "nodes": [
-    { "id": "e1", "label": "美联储", "type": "org", "description": "..." }
-  ],
-  "edges": [
-    { "source": "e1", "target": "e2", "label": "负相关", "weight": 0.85 }
-  ]
-}
-```
-
-节点类型：`person` · `org` · `concept` · `event` · `price`
-
----
-
-### `POST /api/simulation/{sim_id}/report/chat`
-
-与 ReportAgent 对话（全知视角，可追问任何预测细节）。
-
-```json
-// 请求
-{ "message": "这次模拟中最关键的涌现行为是什么？" }
-
-// 响应
-{ "response": "本次模拟最显著的涌现现象发生在第4轮..." }
-```
-
----
-
-### `POST /api/simulation/{sim_id}/agent/{agent_id}/chat`
-
-与指定智能体对话（以其角色身份回答）。
-
-```json
-// 请求
-{ "message": "你对当前黄金市场怎么看？" }
-
-// 响应
-{ "response": "作为机构投资者，我认为当前央行购金信号明确..." }
-```
-
----
-
-## ⚙️ 仿真参数调优
-
-| 场景 | agent_count | num_rounds | 预计耗时（真实 LLM） |
-|------|-------------|------------|----------------------|
-| 快速试跑 | 10 | 5 | ~1 分钟 |
-| 标准预测 | 20 | 15 | ~5 分钟 |
-| 深度分析 | 40 | 30 | ~15 分钟 |
-| 全量仿真 | 50 | 40 | ~30 分钟 |
-
-> Mock 模式下所有配置均秒级完成。
-
----
-
-## 🧩 技术栈
+## 技术栈
 
 | 层级 | 技术 |
-|------|------|
-| 前端 | 原生 HTML5 + CSS3 + Vanilla JS（零构建依赖） |
-| 后端 | Python 3.11 · Flask · NetworkX · threading |
-| LLM 接入 | 任意 OpenAI 兼容接口（requests 直调） |
-| 知识图谱 | GraphRAG + NetworkX 有向图 |
-| 智能体记忆 | 短期（滑动窗口）+ 长期（Zep Cloud / 内存） |
-| 容器化 | Docker Compose（前端 nginx + 后端 Python）|
-| 包管理 | uv（Python）· npm（Node）· concurrently |
+|---|---|
+| 前端 | React 18, Vite, Tailwind CSS, lucide-react |
+| 后端 | FastAPI, Python 3.11+, SSE |
+| LLM | OpenAI-compatible API，默认支持阿里百炼通义千问 |
+| 图谱 | NetworkX |
+| 文件解析 | 文本 / Markdown / PDF |
+| 记忆 | Zep Cloud 可选；未配置时使用内存模式 |
+| 部署 | Docker Compose / 本地开发 |
 
 ---
 
-## 🗺️ 路线图
+## 项目结构
 
-- [x] 核心多智能体仿真引擎
-- [x] GraphRAG 知识图谱构建
-- [x] ReportAgent 预测报告生成
-- [x] 智能体 / ReportAgent 深度对话
-- [x] Mock 模式（无 Key 完整体验）
-- [x] Docker 一键部署
-- [ ] 文件上传（PDF / Word 种子材料）
-- [ ] 实时 SSE 推流（无需前端轮询）
-- [ ] 多仿真对比视图
-- [ ] 智能体网络图（力导向布局）
-- [ ] 预测结果历史存档
-
----
-
-## 🤝 贡献指南
-
-1. Fork 本仓库
-2. 创建特性分支：`git checkout -b feature/your-feature`
-3. 提交更改：`git commit -m 'feat: add your feature'`
-4. 推送分支：`git push origin feature/your-feature`
-5. 发起 Pull Request
-
----
-
-## 📄 License
-
-MIT License © 2025 GoldTo Contributors
+```text
+.
+├── backend
+│   ├── main.py                  # FastAPI 入口
+│   ├── api/routes.py             # 会话、上传、SSE、报告、聊天 API
+│   ├── agents
+│   │   ├── simulation_engine.py  # 当前主流程编排
+│   │   ├── persona_agent.py      # 企业专家 Agent 生成与会商
+│   │   └── report_agent.py       # 战略简报生成与追问
+│   ├── graph/graph_builder.py    # 海外市场知识图谱构建
+│   ├── memory/zep_memory.py      # 记忆管理
+│   └── utils/mock_client.py      # 无 API Key 的周大福 Demo Mock
+├── frontend
+│   ├── src/pages/HomePage.jsx     # 上传资料与启动会商
+│   ├── src/pages/SimulatePage.jsx # 会商控制台
+│   ├── src/pages/WorldPage.jsx    # 企业专家 Agent 和知识图谱
+│   ├── src/pages/ReportPage.jsx   # 战略简报
+│   └── src/pages/ChatPage.jsx     # 追问验证
+├── .env.example
+├── package.json
+└── README.md
+```
 
 ---
 
-<div align="center">
+## 当前版本边界
 
-**如果这个项目对你有帮助，欢迎 Star ⭐**
+已实现：
 
-</div>
-# GoldTo
-# GoldTo
+- 上传企业调研材料
+- 构建海外市场知识图谱
+- 生成企业专家 Agent
+- 多轮情报会商
+- 输出周大福海外市场战略简报
+- 追问验证
+- Mock 模式完整演示
+
+暂未接入：
+
+- 实时网页抓取
+- 企业内部 SAP / CRM / D-ONE / T MARK 数据
+- 真实金价、汇率、社媒和电商 API
+- 用户权限和企业级审计
+- 报告自动定时推送
+
+后续可扩展为：
+
+- 每日 08:00 自动生成海外市场简报
+- 按角色分发不同版本：管理层、海外运营、产品、品牌、合规、供应链
+- 接入公开新闻、监管公告、社媒、电商评论、金价汇率
+- 与企业内部销售、库存、客户和供应链数据联动
+
+---
+
+## 推荐 Demo 话术
+
+本项目不是让 AI 直接替企业决策，而是让 AI 成为企业现有数据系统和公开信息之间的智能分析层。
+
+它的价值在于：
+
+- 把分散的海外信息转成统一结构
+- 把新闻、竞品、社媒、合规和供应链信号变成业务语言
+- 告诉团队今天该看什么、谁该处理、为什么重要
+- 给管理层提供可追问、可验证、可行动的每日战略简报

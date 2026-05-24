@@ -46,14 +46,14 @@ BACKEND_PID=$!
 sleep 2
 
 # ── 启动前端 ─────────────────────────────────────────────
-echo -e "${MAGENTA}[FRONTEND] 启动 Vite 前端 → http://localhost:3000${NC}"
+echo -e "${MAGENTA}[FRONTEND] 启动 Vite 前端 → http://localhost:3001${NC}"
 cd "$ROOT/frontend"
 npm run dev 2>&1 | sed "s/^/${MAGENTA}[FRONTEND]${NC} /" &
 FRONTEND_PID=$!
 
 echo ""
 echo -e "${GREEN}[GoldTo] 服务已启动${NC}"
-echo -e "  前端: ${GREEN}http://localhost:3000${NC}"
+echo -e "  前端: ${GREEN}http://localhost:3001${NC}"
 echo -e "  后端: ${GREEN}http://localhost:5001${NC}  (API 文档: /docs)"
 echo -e "  按 ${RED}Ctrl+C${NC} 停止所有服务"
 echo ""

@@ -1,5 +1,5 @@
 """
-SimulationEngine — Orchestrates the full GoldTo pipeline:
+SimulationEngine — Orchestrates the full CTF Strategy Radar pipeline:
   1. Graph construction (GraphRAG)
   2. Environment setup (Persona generation)
   3. Simulation (multi-agent interaction)
@@ -87,6 +87,7 @@ class Session:
             "report": self.report,
             "graph_data": self.graph_data,
             "error": self.error,
+            "created_at": self.created_at,
         }
 
 
@@ -132,7 +133,7 @@ class SimulationEngine:
             # ── Step 1: Graph construction ───────────────────────────────────
             session.status = SimStatus.BUILDING_GRAPH
             session.progress = 5
-            session.emit("status", {"status": SimStatus.BUILDING_GRAPH, "message": "正在构建知识图谱..."})
+            session.emit("status", {"status": SimStatus.BUILDING_GRAPH, "message": "正在构建海外市场知识图谱..."})
 
             graph_builder = GraphBuilder(llm)
             graph_result = await graph_builder.build(session.seed_text, session.prediction_goal)
@@ -147,7 +148,7 @@ class SimulationEngine:
 
             # ── Step 2: Persona generation ───────────────────────────────────
             session.status = SimStatus.GENERATING_PERSONAS
-            session.emit("status", {"status": SimStatus.GENERATING_PERSONAS, "message": "正在生成智能体人设..."})
+            session.emit("status", {"status": SimStatus.GENERATING_PERSONAS, "message": "正在生成企业专家 Agent..."})
 
             n_agents = settings.agents_count
             agents = await generate_personas(
@@ -232,7 +233,7 @@ class SimulationEngine:
             # ── Step 4: Report generation ─────────────────────────────────────
             session.status = SimStatus.GENERATING_REPORT
             session.progress = 92
-            session.emit("status", {"status": SimStatus.GENERATING_REPORT, "message": "正在生成预测报告..."})
+            session.emit("status", {"status": SimStatus.GENERATING_REPORT, "message": "正在生成海外市场战略简报..."})
 
             report_agent = ReportAgent(llm)
             report = await report_agent.generate_report(
@@ -285,7 +286,7 @@ class SimulationEngine:
                     agent.to_dict(), message, session.prediction_goal
                 )
 
-        sim_state = f"仿真完成 {len(session.history)} 次互动，{len(session.agents)} 个智能体"
+        sim_state = f"情报会商完成 {len(session.history)} 次互动，{len(session.agents)} 个企业专家 Agent"
         return await report_agent.chat_with_report(message, session.prediction_goal, sim_state)
 
     # ── Helpers ───────────────────────────────────────────────────────────────

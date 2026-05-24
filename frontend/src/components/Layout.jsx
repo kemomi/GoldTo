@@ -1,6 +1,6 @@
 import React from 'react'
 import { Outlet, NavLink, useParams, useLocation } from 'react-router-dom'
-import { BarChart2, Globe, FileText, MessageCircle, Home, Cpu, Zap } from 'lucide-react'
+import { Globe, FileText, MessageCircle, Home, Cpu, Zap, Filter, History } from 'lucide-react'
 
 function NavItem({ to, icon: Icon, label, disabled }) {
   return disabled ? (
@@ -41,18 +41,20 @@ export default function Layout() {
             <Zap size={16} className="text-amber-400" />
           </div>
           <div>
-            <div className="font-bold text-white text-sm tracking-wide">GoldTo</div>
-            <div className="text-xs text-slate-500">群体智能引擎</div>
+            <div className="font-bold text-white text-sm tracking-wide">CTF Radar</div>
+            <div className="text-xs text-slate-500">海外战略情报</div>
           </div>
         </div>
 
         <nav className="flex-1 px-3 pb-4 flex flex-col gap-1">
           <div className="text-xs text-slate-600 uppercase tracking-wider px-3 py-2 mt-2">导航</div>
           <NavItem to="/" icon={Home} label="首页" />
-          <NavItem to={sessionId ? `/simulate/${sessionId}` : '#'} icon={Cpu} label="仿真控制台" disabled={!sessionId} />
-          <NavItem to={sessionId ? `/world/${sessionId}` : '#'} icon={Globe} label="智能体世界" disabled={!sessionId} />
-          <NavItem to={sessionId ? `/report/${sessionId}` : '#'} icon={FileText} label="预测报告" disabled={!sessionId} />
-          <NavItem to={sessionId ? `/chat/${sessionId}` : '#'} icon={MessageCircle} label="深度对话" disabled={!sessionId} />
+          <NavItem to="/history" icon={History} label="历史会话" />
+          <NavItem to="/worldmonitor" icon={Filter} label="WM 情报筛选" />
+          <NavItem to={sessionId ? `/simulate/${sessionId}` : '#'} icon={Cpu} label="会商控制台" disabled={!sessionId} />
+          <NavItem to={sessionId ? `/world/${sessionId}` : '#'} icon={Globe} label="专家 Agent" disabled={!sessionId} />
+          <NavItem to={sessionId ? `/report/${sessionId}` : '#'} icon={FileText} label="战略简报" disabled={!sessionId} />
+          <NavItem to={sessionId ? `/chat/${sessionId}` : '#'} icon={MessageCircle} label="追问验证" disabled={!sessionId} />
         </nav>
 
         {/* Footer */}

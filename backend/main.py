@@ -1,5 +1,5 @@
 """
-GoldTo Backend — FastAPI Application
+CTF Strategy Radar Backend — FastAPI Application
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,8 +10,8 @@ from api.routes import router
 from config import settings
 
 app = FastAPI(
-    title="GoldTo API",
-    description="群体智能预测引擎 — Swarm Intelligence Prediction Engine",
+    title="CTF Strategy Radar API",
+    description="周大福海外市场战略情报 Agent",
     version="1.0.0",
 )
 
@@ -31,7 +31,7 @@ app.include_router(router)
 @app.get("/")
 async def root():
     return {
-        "name": "GoldTo",
+        "name": "CTF Strategy Radar",
         "version": "1.0.0",
         "status": "running",
         "docs": "/docs",

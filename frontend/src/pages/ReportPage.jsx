@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { FileText, MessageCircle, TrendingUp, TrendingDown, Users, Download } from 'lucide-react'
-import { getReport, getAgents } from '../api/client'
+import { getReport, getAgents, getSession, getChatHistory, saveLastSessionId } from '../api/client'
+import { buildSessionMarkdown, downloadBlob, markdownToWordHtml } from '../utils/exporters'
 
 // Simple markdown-to-JSX renderer (handles ##, **bold**, - list, > quote)
 function MarkdownRenderer({ content }) {
@@ -46,14 +47,14 @@ function MarkdownRenderer({ content }) {
 function StanceChart({ agents }) {
   if (!agents.length) return null
 
-  const buckets = { '极度悲观': 0, '悲观': 0, '中性': 0, '乐观': 0, '极度乐观': 0 }
+  const buckets = { '高风险': 0, '风险': 0, '观察': 0, '机会': 0, '强机会': 0 }
   agents.forEach(a => {
     const s = a.current_stance
-    if (s < -0.6) buckets['极度悲观']++
-    else if (s < -0.2) buckets['悲观']++
-    else if (s < 0.2) buckets['中性']++
-    else if (s < 0.6) buckets['乐观']++
-    else buckets['极度乐观']++
+    if (s < -0.6) buckets['高风险']++
+    else if (s < -0.2) buckets['风险']++
+    else if (s < 0.2) buckets['观察']++
+    else if (s < 0.6) buckets['机会']++
+    else buckets['强机会']++
   })
 
   const colors = ['#f87171', '#fb923c', '#94a3b8', '#4ade80', '#10b981']
@@ -62,7 +63,7 @@ function StanceChart({ agents }) {
   return (
     <div className="glass-card p-4">
       <div className="text-xs font-semibold text-slate-400 mb-4 flex items-center gap-2">
-        <Users size={12} /> 智能体立场分布
+        <Users size={12} /> 专家判断分布
       </div>
       <div className="space-y-2">
         {Object.entries(buckets).map(([label, count], i) => (
@@ -87,10 +88,10 @@ function StanceTimeline({ agents }) {
 
   return (
     <div className="glass-card p-4">
-      <div className="text-xs font-semibold text-slate-400 mb-4">群体立场摘要</div>
+      <div className="text-xs font-semibold text-slate-400 mb-4">会商判断摘要</div>
       <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <span className="text-xs text-slate-500">当前平均立场</span>
+          <span className="text-xs text-slate-500">平均机会/风险判断</span>
           <span className="font-mono font-bold text-sm" style={{ color: avg > 0 ? '#10b981' : '#f87171' }}>
             {avg > 0 ? '+' : ''}{avg.toFixed(3)}
           </span>
@@ -102,7 +103,7 @@ function StanceTimeline({ agents }) {
           }} />
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-xs text-slate-500">仿真后立场漂移</span>
+          <span className="text-xs text-slate-500">会商后判断漂移</span>
           <span className="font-mono text-xs flex items-center gap-1" style={{ color: delta > 0 ? '#10b981' : '#f87171' }}>
             {delta > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
             {delta > 0 ? '+' : ''}{delta.toFixed(3)}
@@ -118,27 +119,32 @@ export default function ReportPage() {
   const navigate = useNavigate()
   const [report, setReport] = useState('')
   const [agents, setAgents] = useState([])
+  const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    saveLastSessionId(sessionId)
     Promise.all([
       getReport(sessionId),
       getAgents(sessionId),
-    ]).then(([r, a]) => {
+      getSession(sessionId),
+    ]).then(([r, a, s]) => {
       setReport(r.report)
       setAgents(a.agents)
+      setSession(s)
     }).catch(console.error)
       .finally(() => setLoading(false))
   }, [sessionId])
 
-  const handleDownload = () => {
-    const blob = new Blob([report], { type: 'text/markdown' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `goldto-report-${sessionId}.md`
-    a.click()
-    URL.revokeObjectURL(url)
+  const exportMarkdown = () => {
+    const content = buildSessionMarkdown({ session, report, messages: getChatHistory(sessionId) })
+    downloadBlob(content, `ctf-strategy-archive-${sessionId}.md`, 'text/markdown;charset=utf-8')
+  }
+
+  const exportWord = () => {
+    const content = buildSessionMarkdown({ session, report, messages: getChatHistory(sessionId) })
+    const html = markdownToWordHtml(content, `CTF Strategy Radar ${sessionId}`)
+    downloadBlob(html, `ctf-strategy-archive-${sessionId}.doc`, 'application/msword;charset=utf-8')
   }
 
   return (
@@ -146,17 +152,21 @@ export default function ReportPage() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <FileText size={24} className="text-amber-400" />
-          <h1 className="text-2xl font-bold text-white">预测报告</h1>
+          <h1 className="text-2xl font-bold text-white">战略简报</h1>
         </div>
         <div className="flex gap-3">
-          <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
+          <button onClick={exportMarkdown} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}>
-            <Download size={15} /> 下载报告
+            <Download size={15} /> 导出 Markdown
+          </button>
+          <button onClick={exportWord} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}>
+            <Download size={15} /> 导出 Word
           </button>
           <button onClick={() => navigate(`/chat/${sessionId}`)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold"
             style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#000' }}>
-            <MessageCircle size={15} /> 与报告对话
+            <MessageCircle size={15} /> 追问简报
           </button>
         </div>
       </div>
@@ -167,12 +177,12 @@ export default function ReportPage() {
           <div className="glass-card p-6">
             {loading ? (
               <div className="flex items-center justify-center h-40 gap-3 text-slate-500">
-                <div className="spinner w-5 h-5" /> 报告加载中...
+                <div className="spinner w-5 h-5" /> 简报加载中...
               </div>
             ) : report ? (
               <MarkdownRenderer content={report} />
             ) : (
-              <div className="text-slate-500 text-center py-12">报告尚未生成，请先完成仿真</div>
+              <div className="text-slate-500 text-center py-12">简报尚未生成，请先完成情报会商</div>
             )}
           </div>
         </div>
@@ -184,7 +194,7 @@ export default function ReportPage() {
 
           {/* Top agents */}
           <div className="glass-card p-4">
-            <div className="text-xs font-semibold text-slate-400 mb-3">关键影响者</div>
+            <div className="text-xs font-semibold text-slate-400 mb-3">关键专家 Agent</div>
             <div className="space-y-2">
               {[...agents]
                 .sort((a, b) => Math.abs(b.current_stance) - Math.abs(a.current_stance))

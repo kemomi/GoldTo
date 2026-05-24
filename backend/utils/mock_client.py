@@ -95,8 +95,9 @@ class _MockResponder:
         if "dialogue" in all_text and "stance_delta" in all_text:
             return _MockResponder._interaction(last_user, system, h)
 
-        # ── 4. 预测报告 ──────────────────────────────────────────────────────
-        if ("执行摘要" in all_text or "预测结论" in all_text or
+        # ── 4. Strategy brief / report generation ───────────────────────────
+        if ("周大福海外市场每日战略简报" in all_text or "战略简报" in all_text or
+                "执行摘要" in all_text or "预测结论" in all_text or
                 "仿真发现" in all_text or "ReportAgent" in system):
             return _MockResponder._report(last_user, h)
 
@@ -106,6 +107,34 @@ class _MockResponder:
     # ── 知识图谱 ─────────────────────────────────────────────────────────────
     @staticmethod
     def _graph(text: str, h: int) -> str:
+        is_ctf = any(w in text for w in ["周大福", "Chow Tai Fook", "海外市场", "战略情报", "珠宝"])
+        if is_ctf:
+            entities = [
+                {"id": "e1", "name": "周大福", "type": "brand", "description": "以黄金首饰为核心、正在推进全球化的珠宝集团", "importance": 0.98},
+                {"id": "e2", "name": "东南亚市场", "type": "market", "description": "新加坡、马来西亚、泰国等现有重点海外阵地", "importance": 0.90},
+                {"id": "e3", "name": "中东市场", "type": "market", "description": "迪拜、多哈等计划进入的新高潜力市场", "importance": 0.88},
+                {"id": "e4", "name": "澳大利亚市场", "type": "market", "description": "计划开拓的新市场，适合测试华人客群与高端商圈", "importance": 0.78},
+                {"id": "e5", "name": "国际金价", "type": "indicator", "description": "影响黄金首饰定价、消费意愿和毛利结构", "importance": 0.92},
+                {"id": "e6", "name": "Cartier与Tiffany", "type": "organization", "description": "周大福海外高端化转型面临的国际奢侈品竞品", "importance": 0.82},
+                {"id": "e7", "name": "传承系列", "type": "product", "description": "古法黄金和中华文化表达的核心产品线", "importance": 0.84},
+                {"id": "e8", "name": "D-ONE定制平台", "type": "platform", "description": "支持个性化珠宝定制和消费者偏好沉淀", "importance": 0.70},
+                {"id": "e9", "name": "T MARK钻石溯源", "type": "platform", "description": "支撑钻石供应链透明度和合规可信度", "importance": 0.76},
+                {"id": "e10", "name": "贵金属认证与AML", "type": "policy", "description": "海外珠宝经营必须关注的合规要求", "importance": 0.86},
+            ]
+            relationships = [
+                {"source": "e1", "target": "e2", "type": "expands_to", "description": "东南亚是现有海外运营重点", "weight": 0.90},
+                {"source": "e1", "target": "e3", "type": "targets", "description": "中东是未来两年战略新市场", "weight": 0.88},
+                {"source": "e1", "target": "e4", "type": "targets", "description": "澳大利亚适合新市场试水", "weight": 0.75},
+                {"source": "e5", "target": "e1", "type": "affects", "description": "高金价影响黄金首饰需求和产品组合", "weight": 0.92},
+                {"source": "e6", "target": "e1", "type": "competes", "description": "国际奢侈品牌争夺高端客群和商圈资源", "weight": 0.80},
+                {"source": "e7", "target": "e2", "type": "targets", "description": "古法黄金适合华人文化圈和婚嫁需求", "weight": 0.78},
+                {"source": "e8", "target": "e1", "type": "influences", "description": "定制能力支持年轻化和差异化", "weight": 0.70},
+                {"source": "e9", "target": "e10", "type": "supports", "description": "溯源能力提升供应链合规可信度", "weight": 0.74},
+                {"source": "e10", "target": "e3", "type": "regulates", "description": "中东市场需要提前审查宗教、认证和AML要求", "weight": 0.84},
+            ]
+            summary = "周大福海外战略的核心矛盾是：在黄金首饰高占比和金价波动压力下，利用文化黄金、定制化、钻石溯源和品牌升级能力，稳住东南亚等现有市场，同时谨慎进入中东、澳洲等新市场。"
+            return json.dumps({"entities": entities, "relationships": relationships, "summary": summary}, ensure_ascii=False)
+
         is_oil = any(w in text for w in ["石油", "原油", "油价", "OPEC", "能源"])
         is_gold = any(w in text for w in ["黄金", "金价", "贵金属", "Gold"])
         is_stock = any(w in text for w in ["股市", "A股", "纳指", "股票"])
@@ -182,6 +211,28 @@ class _MockResponder:
     def _personas(text: str, h: int) -> str:
         n_match = re.search(r"生成\s*(\d+)\s*个", text)
         n = int(n_match.group(1)) if n_match else 12
+
+        is_ctf = any(w in text for w in ["周大福", "Chow Tai Fook", "海外市场", "战略情报", "珠宝"])
+        if is_ctf:
+            ctf_personas = [
+                {"id": "agent_1", "name": "林慧敏", "role": "东南亚区域市场 Agent", "organization": "周大福国际业务部", "background": "长期跟踪新加坡、马来西亚、泰国门店、机场零售与华人消费", "personality": "务实、机会导向、重视本地文化", "expertise": ["东南亚零售", "机场店", "旅游消费"], "initial_stance": 0.42, "motivation": "识别东南亚市场机会并形成门店与营销建议"},
+                {"id": "agent_2", "name": "金志贤", "role": "日韩市场 Agent", "organization": "周大福国际业务部", "background": "关注日本和韩国年轻客群、设计趋势与本土珠宝品牌", "personality": "审美敏感、谨慎验证、重视社媒信号", "expertise": ["日本珠宝消费", "韩国潮流", "K金与钻石"], "initial_stance": 0.18, "motivation": "判断周大福产品是否适合日韩本地审美"},
+                {"id": "agent_3", "name": "Olivia Chan", "role": "北美市场 Agent", "organization": "周大福国际业务部", "background": "负责美国、加拿大华人市场和高端商圈监测", "personality": "稳健、关注品牌认知和合规成本", "expertise": ["北美华人市场", "高端商圈", "移民消费"], "initial_stance": 0.08, "motivation": "评估北美门店扩张和品牌沟通机会"},
+                {"id": "agent_4", "name": "Ahmed Wong", "role": "中东与澳洲新市场 Agent", "organization": "周大福战略拓展组", "background": "负责迪拜、多哈、澳大利亚市场进入情报", "personality": "战略视角强、文化敏感、重视风险前置", "expertise": ["迪拜", "多哈", "澳大利亚", "市场进入"], "initial_stance": 0.36, "motivation": "为新市场进入提供优先级和风险判断"},
+                {"id": "agent_5", "name": "许嘉仪", "role": "金价与汇率风险 Agent", "organization": "集团财务与风险管理部", "background": "监控金价、美元、日元、泰铢、新加坡元、澳元和中东货币", "personality": "风险厌恶、数据驱动、强调阈值预警", "expertise": ["国际金价", "汇率", "本地定价"], "initial_stance": -0.22, "motivation": "降低金价和汇率波动对毛利与消费意愿的冲击"},
+                {"id": "agent_6", "name": "陈柏森", "role": "竞品情报 Agent", "organization": "品牌战略部", "background": "追踪Cartier、Tiffany、Bvlgari、周生生、六福和本土品牌动态", "personality": "敏锐、竞争意识强、重视可验证来源", "expertise": ["竞品门店", "价格促销", "品牌联名"], "initial_stance": -0.10, "motivation": "识别竞品动作对周大福海外扩张的威胁与机会"},
+                {"id": "agent_7", "name": "周雅琪", "role": "产品与文化趋势 Agent", "organization": "产品创新中心", "background": "负责古法黄金、婚嫁珠宝、D-ONE定制和Hearts On Fire海外适配", "personality": "创意强、消费者导向、重视文化翻译", "expertise": ["传承系列", "婚嫁珠宝", "D-ONE", "Hearts On Fire"], "initial_stance": 0.30, "motivation": "把市场趋势转化为可落地的产品组合建议"},
+                {"id": "agent_8", "name": "Tan Wei", "role": "渠道与电商平台 Agent", "organization": "全渠道零售部", "background": "关注Shopee、Lazada、Rakuten、Qoo10、机场店和高端商场", "personality": "执行导向、重视转化效率、善于平台比较", "expertise": ["Shopee", "Lazada", "Rakuten", "机场零售"], "initial_stance": 0.24, "motivation": "判断市场应先开店、先电商试水还是做本地合作"},
+                {"id": "agent_9", "name": "黄谨言", "role": "合规与监管 Agent", "organization": "法务合规部", "background": "监控贵金属认证、AML/KYC、广告法、消费者保护和数据隐私", "personality": "审慎、原则性强、升级意识高", "expertise": ["贵金属认证", "AML", "数据隐私", "广告合规"], "initial_stance": -0.35, "motivation": "提前识别海外经营与营销中的合规红线"},
+                {"id": "agent_10", "name": "梁思远", "role": "供应链风险 Agent", "organization": "供应链管理部", "background": "关注钻石来源、T MARK溯源、物流延误、ESG和地缘风险", "personality": "系统性强、风险敏感、重视替代方案", "expertise": ["钻石溯源", "T MARK", "物流", "ESG"], "initial_stance": -0.18, "motivation": "降低原材料、物流和供应商风险对海外销售的影响"},
+                {"id": "agent_11", "name": "何婉莹", "role": "品牌声誉与舆情 Agent", "organization": "公关传播部", "background": "监控海外社媒、产品评价、门店服务和代言人风险", "personality": "反应快、情绪敏感、重视危机窗口", "expertise": ["社媒舆情", "服务评价", "代言人风险"], "initial_stance": -0.12, "motivation": "尽早发现品牌负面扩散并给出回应建议"},
+                {"id": "agent_12", "name": "郑启明", "role": "战略简报总控 Agent", "organization": "管理层办公室", "background": "负责把各专家Agent结论整合为管理层简报和跨部门行动清单", "personality": "全局视角、决策导向、强调优先级", "expertise": ["战略简报", "跨部门协同", "行动清单"], "initial_stance": 0.05, "motivation": "让管理层每天快速知道最该关注什么、谁要行动"},
+            ]
+            result = ctf_personas[:n]
+            while len(result) < n:
+                i = len(result) + 1
+                result.append({"id": f"agent_{i}", "name": f"市场专家{i}", "role": "海外市场情报 Agent", "organization": "周大福国际业务部", "background": "负责补充海外公开信息研判", "personality": "理性、务实", "expertise": ["市场情报"], "initial_stance": round(random.uniform(-0.2, 0.3), 2), "motivation": "补充区域机会和风险判断"})
+            return json.dumps(result[:n], ensure_ascii=False)
 
         is_oil = any(w in text for w in ["石油", "原油", "油价", "能源"])
 
@@ -270,6 +321,36 @@ class _MockResponder:
         stance_match = re.search(r"当前立场[（(]-1.*?[）)][：:]\s*([+-]?\d+\.\d+)", text)
         cur_stance = float(stance_match.group(1)) if stance_match else 0.0
 
+        is_ctf = any(w in text for w in ["周大福", "海外战略", "战略情报", "企业情报", "海外市场"])
+        if is_ctf:
+            dialogue_sets = [
+                [
+                    {"speaker": name_a, "text": "我把过去24小时信号按市场拆了一遍。东南亚仍是最容易转化的区域，但高金价会压制克重黄金，建议把一口价黄金和婚嫁场景放到更前面。"},
+                    {"speaker": name_b, "text": "同意，但我担心竞品在高端商圈的速度更快。Cartier和Tiffany的品牌势能会稀释我们在非华人客群中的认知，需要更明确的文化差异化。"},
+                    {"speaker": name_a, "text": "所以行动上不能只看开店。新加坡和曼谷适合用形象店强化品牌，中东和澳洲则需要先做合规、商圈和客群验证。"},
+                    {"speaker": name_b, "text": "我会把这条升级到管理层摘要：现有市场抓转化，新市场先建证据链，所有建议都要标来源和可信度。"},
+                ],
+                [
+                    {"speaker": name_a, "text": "今天最值得关注的是金价与汇率的组合风险。黄金首饰占比高，若本地货币走弱，海外售价和毛利会同时承压。"},
+                    {"speaker": name_b, "text": "这会直接影响产品组合。建议区域团队少推大克重按克黄金，多推传承系列的一口价款、D-ONE定制和高毛利镶嵌产品。"},
+                    {"speaker": name_a, "text": "我会把风险等级定为中高，负责部门是财务、产品和海外运营。需要每周复核本地价格带，不要等门店反馈滞后。"},
+                    {"speaker": name_b, "text": "可以，同时让电商团队用小批量上新测试年轻客群反应，避免线下库存压力。"},
+                ],
+                [
+                    {"speaker": name_a, "text": "中东市场不能只按高购买力理解。黄金偏好是真机会，但宗教文化、广告表达、贵金属认证和AML要求都需要前置审查。"},
+                    {"speaker": name_b, "text": "对，迪拜适合做品牌展示，但多哈可能更需要合作伙伴和本地关系。建议先输出市场进入清单，而不是直接给开店结论。"},
+                    {"speaker": name_a, "text": "我会建议合规法务和战略拓展联合验证：产品图案、营销素材、支付与KYC、进口税和售后规则。"},
+                    {"speaker": name_b, "text": "这条应归类为机会伴随高合规风险，管理层可关注，但暂不建议跳过验证直接扩张。"},
+                ],
+            ]
+            deltas = [0.06, -0.04, 0.08, -0.07, 0.03]
+            return json.dumps({
+                "dialogue": dialogue_sets[h % len(dialogue_sets)],
+                "my_insight": f"通过与{name_b}会商，我确认周大福海外情报需要同时给出市场机会、风险等级、负责部门和来源可信度，不能只输出笼统趋势。",
+                "stance_delta": deltas[(h + round_num) % len(deltas)],
+                "action": "建议将相关信号纳入今日战略简报，并按管理层、海外运营、产品、品牌、合规和供应链拆分行动清单。",
+            }, ensure_ascii=False)
+
         # Vary dialogues based on round and hash
         dialogue_sets = [
             [
@@ -318,7 +399,7 @@ class _MockResponder:
             "action": actions[h % len(actions)],
         }, ensure_ascii=False)
 
-    # ── 预测报告 ─────────────────────────────────────────────────────────────
+    # ── Strategy brief / fallback report ─────────────────────────────────────
     @staticmethod
     def _report(text: str, h: int) -> str:
         # Extract key numbers from context
@@ -326,11 +407,101 @@ class _MockResponder:
         rounds_match = re.search(r"仿真轮次[：:]\s*(\d+)", text)
         interactions_match = re.search(r"总互动次数[：:]\s*(\d+)", text)
         avg_match = re.search(r"平均立场[：:]\s*([+-]?\d+\.\d+)", text)
+        if not avg_match:
+            avg_match = re.search(r"平均机会/风险判断[：:]\s*([+-]?\d+\.\d+)", text)
 
         n_agents = agents_match.group(1) if agents_match else "12"
         n_rounds = rounds_match.group(1) if rounds_match else "30"
         n_interactions = interactions_match.group(1) if interactions_match else "120"
         avg_stance = float(avg_match.group(1)) if avg_match else 0.18
+
+        is_ctf = any(w in text for w in ["周大福", "海外市场", "战略简报", "东南亚", "中东", "珠宝"])
+        if is_ctf:
+            priority = "机会偏强，风险需前置" if avg_stance >= 0 else "风险偏强，建议收紧验证"
+            return f"""# 周大福海外市场每日战略简报
+
+## 今日总览
+
+本次由 **{n_agents} 个企业专家 Agent** 完成 **{n_rounds} 轮** 情报会商，共形成 **{n_interactions} 条互动记录**。综合判断：海外市场仍存在扩张机会，但高金价、合规差异和国际奢侈品牌竞争会抬高执行难度。当前总判断为：**{priority}**。
+
+- **机会**：东南亚现有市场适合通过形象店、机场店和婚嫁场景继续提高转化。
+- **机会**：中东和澳洲具备新市场潜力，但必须先完成合规、商圈和客群验证。
+- **风险**：国际金价与本地货币波动会影响黄金首饰售价、毛利和消费者下单意愿。
+- **待观察**：日韩市场需要验证周大福的中华文化表达是否能被非华人年轻客群接受。
+
+## 高优先级预警
+
+| 市场 | 事件 | 类型 | 优先级 | 建议负责部门 |
+|---|---|---|---|---|
+| 东南亚 | 高金价下大克重黄金转化承压，一口价黄金和婚嫁产品更适合前置 | 风险/机会 | 高 | 海外运营、产品团队 |
+| 中东 | 迪拜、多哈具备高端珠宝消费潜力，但宗教文化、AML和贵金属认证需提前审查 | 机会/合规风险 | 高 | 战略拓展、合规法务 |
+| 澳洲 | 新市场进入前需验证华人客群、高端商圈和本地竞品密度 | 待观察 | 中 | 管理层、海外运营 |
+| 全球 | Cartier、Tiffany等国际奢侈品牌强化高端商圈存在感 | 竞争风险 | 中高 | 品牌战略、门店拓展 |
+
+## 各区域市场变化
+
+### 东南亚
+
+新加坡、马来西亚、泰国仍是周大福海外业务最可转化的区域。华人文化、婚嫁需求和旅游零售有利于“传承”系列、古法黄金和一口价产品落地。建议樟宜机场、曼谷核心商圈继续作为品牌展示和客流验证节点。
+
+### 日韩
+
+日本和韩国消费者更重视设计感、轻量化、K金、钻石和社媒审美。周大福不宜直接复制华人市场的大克重黄金逻辑，应优先测试轻奢、定制化、联名和设计款。
+
+### 北美
+
+美国、加拿大可先围绕华人客群、婚庆场景和高端商圈建立认知，但面临较强的本土品牌和国际奢侈品牌竞争。建议先聚焦城市级机会，而非大规模铺店。
+
+### 中东与澳洲
+
+中东具备黄金和高端珠宝消费基础，但合规、宗教文化和本地合作伙伴质量是关键变量。澳洲适合作为新市场试点，但进入节奏应以数据验证为主。
+
+## 竞品动态
+
+- Cartier、Tiffany、Bvlgari对高端商圈和非华人客群有更强品牌心智，周大福需要用中华文化、高工艺、溯源和定制化形成差异化。
+- 周生生、六福等港资品牌在华人市场具有直接竞争性，应持续监控新店、促销、联名和电商活动。
+- 本土珠宝品牌在日韩、中东和东南亚具有渠道与文化优势，进入新市场前需完成竞品密度扫描。
+
+## 产品与消费者趋势
+
+- 高金价环境下，应减少对大克重按克黄金的单一路径依赖。
+- “传承”系列适合东南亚华人、婚嫁和节庆场景，但在日韩需重新包装为工艺与设计故事。
+- Hearts On Fire适合承担高端化表达，D-ONE适合做年轻客群和个性化入口。
+- CTF PET、IP联名和轻奢线可作为社媒测试素材，但需控制品牌调性风险。
+
+## 渠道与电商机会
+
+- 东南亚可结合机场店、高端购物中心和Shopee/Lazada进行线上线下联动。
+- 日本可观察Rakuten、Qoo10与本地KOL合作机会。
+- 澳洲和中东建议先做小范围电商/快闪/合作渠道验证，再决定长期门店投入。
+
+## 合规与供应链风险
+
+- 合规重点：贵金属纯度认证、进口关税、AML/KYC、消费者保护、数据隐私、广告与代言规范。
+- 供应链重点：钻石来源国风险、T MARK溯源、物流延误、ESG争议。
+- 中东市场进入前必须完成宗教文化禁忌和营销素材审查。
+
+## 建议行动清单
+
+| 角色 | 今日建议动作 |
+|---|---|
+| 管理层 | 关注中东和澳洲进入优先级，但要求先提交合规与客群验证清单 |
+| 海外运营 | 对东南亚重点门店复核产品陈列和本地价格带 |
+| 产品团队 | 增加一口价黄金、婚嫁、轻量化设计和D-ONE定制测试 |
+| 品牌团队 | 为非华人市场准备“中华工艺+现代设计”的本地化表达 |
+| 合规法务 | 建立中东、澳洲、日韩贵金属认证与AML差异表 |
+| 供应链 | 复核钻石溯源、关键供应商和跨境物流风险 |
+
+## 信息来源与可信度
+
+当前 Demo 基于上传调研材料、公开信息结构和模拟情报信号生成。真实部署时应接入新闻、监管公告、社媒、电商平台、金价汇率和企业内部系统。
+
+- 官方公告/监管文件：可信度高
+- 主流财经与行业媒体：可信度中高
+- 社媒/KOL/电商评论：可信度中，需交叉验证
+- 单一匿名来源：可信度低，仅列为观察
+
+*本报告由周大福海外市场战略雷达 Agent 生成 · Mock 模式 · 仅供赛题演示*"""
 
         is_oil = any(w in text for w in ["石油", "原油", "油价"])
         is_stock = any(w in text for w in ["股市", "A股", "股票"])
@@ -453,8 +624,16 @@ class _MockResponder:
     def _chat(text: str, system: str, h: int) -> str:
         is_agent_chat = "你正在扮演" in system or "完全沉浸在角色" in system
         is_report_chat = "ReportAgent" in system or "报告智能体" in system
+        is_ctf = any(w in (text + system) for w in ["周大福", "海外市场", "战略情报", "战略简报", "中东", "东南亚", "竞品"])
 
         if is_agent_chat:
+            if is_ctf:
+                responses = [
+                    "从我的职能视角看，这个问题需要拆成市场机会、风险等级和负责部门三层。以周大福当前海外扩张节奏，东南亚可以偏执行，中东和澳洲要先做验证。我的建议是把来源、时间、可信度补齐后，再进入管理层行动清单。",
+                    "我会优先看这件事是否影响门店转化、产品组合、品牌声誉或合规红线。如果只是趋势信号，可以列为观察；如果牵涉贵金属认证、AML或竞品抢占核心商圈，就应升级为高优先级。",
+                    "对周大福来说，不能只问市场热不热，还要问我们的产品叙事能不能本地化。传承系列、D-ONE和Hearts On Fire面对的客群不同，建议按区域分别测试，不要用同一套打法覆盖所有海外市场。",
+                ]
+                return responses[h % len(responses)]
             name_match = re.search(r"姓名[：:]\s*(.{2,8})", system)
             role_match = re.search(r"职位[：:]\s*(.{2,20})", system)
             stance_match = re.search(r"当前立场[（(]-1.*?[）)][：:]\s*([+-]?\d+\.\d+)", system)
@@ -471,6 +650,13 @@ class _MockResponder:
             return responses[h % len(responses)]
 
         if is_report_chat:
+            if is_ctf:
+                responses_report = [
+                    "中东市场优先级升高，是因为它同时具备高端消费、黄金偏好和购物中心/旅游零售场景。但它不是低风险机会：宗教文化、贵金属认证、AML/KYC、广告表达和本地合作伙伴都需要前置验证。因此建议管理层关注，但由战略拓展和合规法务先输出进入清单。",
+                    "最值得关注的竞品动作有三类：国际奢侈品牌抢占高端商圈，港资珠宝品牌在华人客群中做价格和门店竞争，本土品牌掌握本地文化与渠道。周大福的应对不应只是降价，而是强化中华工艺、溯源可信度、定制化和婚嫁场景。",
+                    "金价上涨会影响周大福海外产品组合：大克重按克黄金的转化可能下降，一口价黄金、轻量化设计、婚嫁小套系、D-ONE定制和高毛利镶嵌产品更适合前置。建议财务、产品和海外运营共同复核本地价格带。",
+                ]
+                return responses_report[h % len(responses_report)]
             responses_report = [
                 "基于完整的仿真数据分析，这次模拟中最显著的涌现现象发生在中期阶段：机构分析师与政策研究员之间的分歧触发了一次明显的信息级联。当两个高影响力智能体达成共识后，其他11个智能体在3轮内相继调整了立场，体现了经典的羊群效应。这也是我们预测置信度能够达到65%以上的核心依据。",
                 "从全知视角来看，这次仿真揭示了一个重要规律：在所有12个智能体中，有3个关键节点（机构分析师、央行研究员、对冲基金经理）的立场变化对最终群体共识的形成贡献了约70%的影响力。这符合复杂系统中的'少数节点主导'理论。建议你重点关注这三个角色的最新洞察。",

@@ -14,6 +14,11 @@ from pydantic import BaseModel
 
 from agents.simulation_engine import engine, SimStatus
 from config import settings
+from intel.worldmonitor_filter import (
+    build_seed_text_from_dicts,
+    fetch_worldmonitor_digest,
+    filter_worldmonitor_digest,
+)
 
 router = APIRouter(prefix="/api")
 
@@ -170,6 +175,61 @@ async def get_history(session_id: str, limit: int = 50, offset: int = 0):
     total = len(session.history)
     items = session.history[offset: offset + limit]
     return {"history": items, "total": total, "offset": offset, "limit": limit}
+
+
+# ── WorldMonitor ingestion ────────────────────────────────────────────────────
+
+@router.get("/worldmonitor/sources")
+async def get_worldmonitor_sources():
+    """Fetch watched WorldMonitor digest buckets without filtering."""
+    try:
+        return await fetch_worldmonitor_digest()
+    except Exception as e:
+        raise HTTPException(502, f"无法连接 WorldMonitor：{e}") from e
+
+
+@router.post("/worldmonitor/filter")
+async def filter_worldmonitor_sources():
+    """Fetch WorldMonitor digest buckets and classify them for CTF use."""
+    try:
+        return await filter_worldmonitor_digest()
+    except Exception as e:
+        raise HTTPException(502, f"WorldMonitor 筛选失败：{e}") from e
+
+
+class WorldMonitorSessionRequest(BaseModel):
+    selected: list[dict]
+    watchlist: list[dict] = []
+    prediction_goal: str = "生成周大福今日海外市场战略简报，覆盖东南亚、日韩、北美、中东与澳洲。"
+    rounds: int = 12
+    agents_count: int = 12
+    auto_start: bool = True
+
+
+@router.post("/sessions/from-worldmonitor")
+async def create_session_from_worldmonitor(req: WorldMonitorSessionRequest):
+    items = [*req.selected, *req.watchlist]
+    if not items:
+        raise HTTPException(400, "请至少选择一条 WorldMonitor 情报")
+
+    session_id = str(uuid.uuid4())[:8]
+    session = engine.create_session(session_id)
+    session.prediction_goal = req.prediction_goal
+    session.seed_text = build_seed_text_from_dicts(items)
+    session.total_rounds = min(max(req.rounds, 1), 100)
+    settings.agents_count = min(max(req.agents_count, 1), 30)
+
+    if req.auto_start:
+        asyncio.create_task(engine.run_pipeline(session))
+
+    return {
+        "session_id": session_id,
+        "status": session.status,
+        "text_length": len(session.seed_text),
+        "selected_count": len(req.selected),
+        "watchlist_count": len(req.watchlist),
+        "message": "已从 WorldMonitor 精选情报创建会话",
+    }
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

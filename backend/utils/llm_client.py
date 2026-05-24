@@ -64,6 +64,56 @@ class LLMClient:
         last = messages[-1]["content"] if messages else ""
         system_msg = messages[0]["content"] if messages and messages[0].get("role") == "system" else ""
         h = hash(last) % 10000
+        is_ctf = any(w in (last + system_msg) for w in ["周大福", "Chow Tai Fook", "海外市场", "战略情报", "战略简报", "珠宝"])
+
+        if is_ctf and "entities" in last and ("relations" in last or "relationships" in last):
+            entities = [
+                {"id": "e1", "label": "周大福", "type": "brand", "description": "正推进全球化的珠宝零售集团"},
+                {"id": "e2", "label": "东南亚市场", "type": "market", "description": "新加坡、马来西亚、泰国等现有海外阵地"},
+                {"id": "e3", "label": "中东市场", "type": "market", "description": "迪拜、多哈等潜在新市场"},
+                {"id": "e4", "label": "国际金价", "type": "indicator", "description": "影响黄金首饰需求、定价和毛利"},
+                {"id": "e5", "label": "传承系列", "type": "product", "description": "古法黄金和中华文化表达的核心产品线"},
+                {"id": "e6", "label": "贵金属认证与AML", "type": "policy", "description": "海外市场重要合规约束"},
+            ]
+            relations = [
+                {"source": "e1", "target": "e2", "label": "重点运营", "weight": 0.9},
+                {"source": "e1", "target": "e3", "label": "计划进入", "weight": 0.85},
+                {"source": "e4", "target": "e1", "label": "影响产品组合", "weight": 0.9},
+                {"source": "e5", "target": "e2", "label": "适配华人婚嫁和节庆场景", "weight": 0.78},
+                {"source": "e6", "target": "e3", "label": "进入前需审查", "weight": 0.86},
+            ]
+            import json as _j
+            return _j.dumps({"entities": entities, "relations": relations}, ensure_ascii=False)
+
+        if is_ctf and ("ReportAgent" in system_msg or "报告" in last or "简报" in last):
+            return (
+                "# 周大福海外市场每日战略简报\n\n"
+                "## 今日总览\n"
+                "- 东南亚仍是最适合快速转化的海外区域，建议继续围绕机场店、形象店和婚嫁场景推进。\n"
+                "- 中东和澳洲具备新市场潜力，但合规、文化和客群验证必须前置。\n"
+                "- 高金价会压制大克重黄金转化，建议增加一口价黄金、轻量化设计、D-ONE定制和镶嵌产品占比。\n\n"
+                "## 高优先级预警\n"
+                "| 市场 | 事件 | 影响 | 建议负责部门 |\n"
+                "|---|---|---|---|\n"
+                "| 东南亚 | 高金价影响黄金首饰消费 | 需调整价格带和陈列 | 海外运营、产品团队 |\n"
+                "| 中东 | 贵金属认证、AML与宗教文化差异 | 市场进入前需审查 | 战略拓展、合规法务 |\n"
+                "| 全球 | Cartier、Tiffany抢占高端商圈 | 品牌差异化压力上升 | 品牌战略、门店拓展 |\n\n"
+                "## 建议行动清单\n"
+                "- 管理层：要求中东/澳洲进入方案补充合规和客群验证。\n"
+                "- 海外运营：复核东南亚重点门店价格带和主推产品。\n"
+                "- 产品团队：测试传承系列、婚嫁小套系、Hearts On Fire和D-ONE定制组合。\n"
+                "- 合规法务：建立重点市场贵金属认证、AML、广告和数据隐私差异表。\n\n"
+                "## 信息来源与可信度\n"
+                "当前为上传调研材料和模拟公开信号整合；真实部署需接入新闻、监管公告、社媒、电商、金价汇率和企业内部系统。"
+            )
+
+        if is_ctf:
+            pool = [
+                "从周大福海外战略角度看，这条信号需要拆成机会、风险、负责部门和来源可信度。东南亚偏执行，中东和澳洲偏验证。",
+                "建议优先关注是否影响门店转化、产品组合、品牌声誉或合规红线。涉及贵金属认证、AML和竞品核心商圈动作时应升级预警。",
+                "高金价下不要只推大克重黄金，应增加一口价、婚嫁、轻量化设计、D-ONE定制和高毛利镶嵌产品测试。",
+            ]
+            return pool[h % len(pool)]
 
         # ── Knowledge graph extraction ──────────────────────────────────
         if "entities" in last and "relations" in last and "type" in last:

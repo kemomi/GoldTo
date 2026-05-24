@@ -1,13 +1,13 @@
 import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Upload, Zap, ArrowRight, FileText, Target, Settings2, AlertCircle } from 'lucide-react'
-import { createSession, uploadSeed, startSimulation } from '../api/client'
+import { Upload, Zap, ArrowRight, FileText, Target, Settings2, AlertCircle, Filter, History } from 'lucide-react'
+import { createSession, uploadSeed, startSimulation, getLastSessionId, saveLastSessionId } from '../api/client'
 
 const EXAMPLES = [
-  { icon: '🥇', label: '黄金价格', goal: '未来3个月国际黄金价格走势将如何变化？' },
-  { icon: '🛢️', label: '原油市场', goal: '未来6个月WTI原油价格将如何演变？' },
-  { icon: '💹', label: 'A股行情', goal: '未来一季度A股市场整体走势如何？' },
-  { icon: '🌏', label: '地缘政治', goal: '该地区紧张局势将如何影响全球金融市场？' },
+  { icon: '🌏', label: '每日简报', goal: '生成周大福今日海外市场战略简报，覆盖东南亚、日韩、北美、中东与澳洲。' },
+  { icon: '🏬', label: '新市场进入', goal: '评估周大福进入迪拜、多哈和澳大利亚市场的机会、风险与优先级。' },
+  { icon: '💍', label: '产品组合', goal: '分析高金价环境下周大福海外市场应如何调整黄金、婚嫁、钻石和定制产品组合。' },
+  { icon: '⚖️', label: '合规预警', goal: '识别周大福海外门店、电商和营销活动需要关注的贵金属认证、AML和数据隐私风险。' },
 ]
 
 export default function HomePage() {
@@ -30,7 +30,7 @@ export default function HomePage() {
 
   const handleSubmit = async () => {
     if (!file) return setError('请上传种子文档')
-    if (!goal.trim()) return setError('请输入预测目标')
+    if (!goal.trim()) return setError('请输入情报任务')
     setError('')
     setLoading(true)
 
@@ -45,6 +45,7 @@ export default function HomePage() {
       await uploadSeed(session_id, fd)
 
       await startSimulation(session_id)
+      saveLastSessionId(session_id)
       navigate(`/simulate/${session_id}`)
     } catch (e) {
       setError(e.response?.data?.detail || e.message)
@@ -55,15 +56,15 @@ export default function HomePage() {
   return (
     <div className="min-h-full flex flex-col items-center justify-center p-8">
       {/* Hero */}
-      <div className="text-center mb-10 animate-float">
+      <div className="text-center mb-10">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/5 text-amber-400 text-xs font-medium mb-6">
-          <Zap size={12} /> 群体智能预测引擎 · Swarm Intelligence
+          <Zap size={12} /> 周大福海外市场 · 战略情报雷达
         </div>
         <h1 className="text-5xl font-bold mb-3 gold-text-glow" style={{ color: 'var(--gold-bright)' }}>
-          GoldTo
+          CTF Strategy Radar
         </h1>
         <p className="text-slate-400 text-lg max-w-xl mx-auto">
-          上传种子材料，描述预测需求，让成千上万个 AI 智能体在数字沙盘中预演未来
+          上传企业调研或公开资料，让多位企业专家 Agent 会商海外市场变化、风险预警和部门行动建议
         </p>
       </div>
 
@@ -75,7 +76,7 @@ export default function HomePage() {
           <div className="mb-6">
             <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 mb-3">
               <FileText size={15} className="text-amber-400" />
-              Step 1 · 上传种子材料
+              Step 1 · 上传企业调研 / 公开资料
             </label>
             <div
               className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all"
@@ -115,7 +116,7 @@ export default function HomePage() {
           <div className="mb-6">
             <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 mb-3">
               <Target size={15} className="text-amber-400" />
-              Step 2 · 描述预测目标
+              Step 2 · 描述情报任务
             </label>
             <textarea
               className="w-full rounded-xl px-4 py-3 text-sm resize-none outline-none transition-all"
@@ -125,7 +126,7 @@ export default function HomePage() {
                 color: 'var(--text-primary)',
                 minHeight: 80,
               }}
-              placeholder="例如：未来3个月国际黄金价格走势将如何变化？"
+              placeholder="例如：生成周大福今日海外市场战略简报，覆盖机会、风险、竞品、产品、渠道、合规和行动清单。"
               value={goal}
               onChange={e => setGoal(e.target.value)}
               onFocus={e => e.target.style.borderColor = 'rgba(245,158,11,0.4)'}
@@ -160,7 +161,7 @@ export default function HomePage() {
             {showAdvanced && (
               <div className="mt-3 grid grid-cols-2 gap-4 p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <div>
-                  <label className="text-xs text-slate-400 mb-1 block">仿真轮次 ({rounds})</label>
+                  <label className="text-xs text-slate-400 mb-1 block">会商轮次 ({rounds})</label>
                   <input type="range" min={5} max={100} value={rounds} onChange={e => setRounds(+e.target.value)} className="w-full accent-amber-500" />
                 </div>
                 <div>
@@ -193,12 +194,12 @@ export default function HomePage() {
             {loading ? (
               <>
                 <div className="spinner w-4 h-4" />
-                正在初始化仿真...
+                正在初始化情报会商...
               </>
             ) : (
               <>
                 <Zap size={16} />
-                启动群体智能仿真
+                启动战略情报会商
                 <ArrowRight size={16} />
               </>
             )}
@@ -206,14 +207,44 @@ export default function HomePage() {
         </div>
       </div>
 
+      <button
+        onClick={() => navigate('/worldmonitor')}
+        className="mt-4 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm transition-all"
+        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#cbd5e1' }}
+      >
+        <Filter size={15} className="text-amber-400" />
+        从 WorldMonitor 导入并人工审核情报
+      </button>
+
+      <div className="mt-3 flex flex-wrap justify-center gap-3">
+        {getLastSessionId() && (
+          <button
+            onClick={() => navigate(`/report/${getLastSessionId()}`)}
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm transition-all"
+            style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.18)', color: '#fbbf24' }}
+          >
+            <FileText size={15} />
+            继续查看最近简报
+          </button>
+        )}
+        <button
+          onClick={() => navigate('/history')}
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm transition-all"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#cbd5e1' }}
+        >
+          <History size={15} className="text-amber-400" />
+          查看历史会话
+        </button>
+      </div>
+
       {/* Workflow steps */}
       <div className="mt-10 grid grid-cols-5 gap-3 max-w-2xl w-full">
         {[
           { step: '01', label: '图谱构建', desc: 'GraphRAG' },
-          { step: '02', label: '人设生成', desc: '多元视角' },
-          { step: '03', label: '群体仿真', desc: '涌现演化' },
-          { step: '04', label: '报告生成', desc: '预测结论' },
-          { step: '05', label: '深度互动', desc: '与智能体对话' },
+          { step: '02', label: '专家生成', desc: '企业职能' },
+          { step: '03', label: '情报会商', desc: '机会风险' },
+          { step: '04', label: '简报生成', desc: '行动清单' },
+          { step: '05', label: '追问验证', desc: '证据链' },
         ].map((s, i) => (
           <div key={i} className="text-center">
             <div className="text-xs font-mono text-amber-500/40 mb-1">{s.step}</div>

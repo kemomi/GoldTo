@@ -12,15 +12,15 @@ from openai import AsyncOpenAI
 from config import settings
 
 _ENTITY_PROMPT = """
-你是一个专业的知识图谱构建专家。请从以下文本中提取关键实体和关系，用于预测分析。
+你是周大福海外市场战略情报系统的知识图谱构建专家。请从以下文本中提取关键实体和关系，用于海外市场情报分析。
 
 文本：
 {text}
 
-预测目标：{goal}
+情报任务：{goal}
 
 请提取：
-- entities: 关键实体（人物、组织、国家、商品、政策、概念等）
+- entities: 关键实体（市场/国家、城市、品牌、竞品、产品系列、渠道、平台、政策、风险、指标等）
 - relationships: 实体之间的关系
 
 严格返回 JSON，格式如下（不要有任何其他内容）：
@@ -34,8 +34,8 @@ _ENTITY_PROMPT = """
   "summary": "文档核心摘要（2-3句）"
 }}
 
-实体类型可以是：person, organization, country, commodity, policy, concept, event, indicator
-关系类型可以是：affects, owns, regulates, competes, cooperates, causes, follows, influences
+实体类型可以是：person, organization, market, city, brand, product, channel, platform, policy, risk, event, indicator, concept
+关系类型可以是：affects, owns, regulates, competes, cooperates, causes, follows, influences, expands_to, targets, requires, monitors
 """
 
 
@@ -53,8 +53,12 @@ class GraphBuilder:
         truncated = text[:8000]  # stay within context
         prompt = _ENTITY_PROMPT.format(text=truncated, goal=prediction_goal)
 
-        raw = await self._llm_json(prompt)
-        data = self._parse_json(raw)
+        try:
+            raw = await self._llm_json(prompt)
+            data = self._parse_json(raw)
+        except Exception as e:
+            print(f"[Graph] LLM extraction failed, using rule-based fallback: {e}")
+            data = self._fallback_data(truncated, prediction_goal, str(e))
 
         self.entities = data.get("entities", [])
         self.summary = data.get("summary", "")
@@ -146,3 +150,96 @@ class GraphBuilder:
                 except Exception:
                     pass
         return {"entities": [], "relationships": [], "summary": "解析失败"}
+
+    @staticmethod
+    def _fallback_data(text: str, goal: str, error: str = "") -> dict:
+        """Build a small usable graph when the LLM endpoint is temporarily unavailable."""
+        keyword_groups = [
+            ("market", [
+                "东南亚", "新加坡", "马来西亚", "泰国", "越南", "菲律宾", "柬埔寨",
+                "日韩", "日本", "韩国", "北美", "美国", "加拿大", "中东", "迪拜",
+                "多哈", "澳大利亚", "香港", "中国",
+            ]),
+            ("brand", [
+                "周大福", "Cartier", "Tiffany", "Bvlgari", "Van Cleef", "周生生",
+                "六福", "谢瑞麟", "Hearts On Fire", "MONOLOGUE", "SOINLOVE",
+                "D-ONE", "T MARK", "传承",
+            ]),
+            ("product", [
+                "黄金", "古法黄金", "钻石", "婚嫁", "珠宝", "首饰", "K金", "IP",
+                "联名", "轻奢", "高端钻石",
+            ]),
+            ("channel", [
+                "Shopee", "Lazada", "Amazon", "Rakuten", "Qoo10", "TikTok",
+                "Instagram", "YouTube", "Facebook", "小红书", "机场", "购物中心",
+                "电商", "直播", "免税", "门店",
+            ]),
+            ("risk", [
+                "金价", "汇率", "通胀", "消费者信心", "关税", "合规", "AML", "KYC",
+                "数据隐私", "广告法", "ESG", "供应链", "物流", "监管", "舆情",
+            ]),
+            ("indicator", ["利率", "客流", "销售", "毛利", "库存", "价格", "旅游"]),
+        ]
+
+        haystack = f"{goal}\n{text}".lower()
+        entities: list[dict[str, Any]] = []
+        seen: set[str] = set()
+
+        for entity_type, keywords in keyword_groups:
+            for keyword in keywords:
+                if keyword.lower() in haystack and keyword not in seen:
+                    seen.add(keyword)
+                    entities.append({
+                        "id": f"e{len(entities) + 1}",
+                        "name": keyword,
+                        "type": entity_type,
+                        "description": f"从上传材料或 WorldMonitor 信号中识别出的{entity_type}实体：{keyword}",
+                        "importance": 0.85 if keyword in {"周大福", "黄金", "金价", "东南亚", "中东"} else 0.65,
+                    })
+
+        if not entities:
+            entities = [
+                {
+                    "id": "e1",
+                    "name": "周大福海外市场",
+                    "type": "concept",
+                    "description": "本次战略情报会商的核心业务对象",
+                    "importance": 0.9,
+                },
+                {
+                    "id": "e2",
+                    "name": "公开市场信号",
+                    "type": "event",
+                    "description": "来自上传材料或 WorldMonitor 的外部信息",
+                    "importance": 0.7,
+                },
+            ]
+
+        relationships = []
+        ctf_id = next((e["id"] for e in entities if e["name"] == "周大福"), entities[0]["id"])
+        for entity in entities:
+            if entity["id"] == ctf_id:
+                continue
+            relation_type = "monitors"
+            if entity["type"] == "brand":
+                relation_type = "competes"
+            elif entity["type"] in {"risk", "indicator"}:
+                relation_type = "affects"
+            elif entity["type"] in {"market", "channel"}:
+                relation_type = "targets"
+            relationships.append({
+                "source": ctf_id,
+                "target": entity["id"],
+                "type": relation_type,
+                "description": f"{entity['name']}需要纳入周大福海外市场战略雷达监控",
+                "weight": entity.get("importance", 0.6),
+            })
+
+        summary = (
+            "已使用本地规则从输入材料中提取市场、品牌、产品、渠道和风险信号，"
+            "可继续生成企业专家 Agent 与战略简报。"
+        )
+        if error:
+            summary += f" 真实 LLM 图谱抽取暂不可用：{error}"
+
+        return {"entities": entities, "relationships": relationships, "summary": summary}

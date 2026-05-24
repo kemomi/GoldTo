@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     agents_count: int = 12
     max_tokens: int = 2000
 
+    # WorldMonitor integration
+    worldmonitor_base_url: str = "http://localhost:3000"
+    worldmonitor_timeout: float = 45.0
+
     # Paths
     upload_dir: Path = Path("uploads")
 

@@ -6,6 +6,8 @@ import SimulatePage from './pages/SimulatePage'
 import WorldPage from './pages/WorldPage'
 import ReportPage from './pages/ReportPage'
 import ChatPage from './pages/ChatPage'
+import WorldMonitorPage from './pages/WorldMonitorPage'
+import HistoryPage from './pages/HistoryPage'
 
 export default function App() {
   return (
@@ -13,6 +15,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
+          <Route path="history" element={<HistoryPage />} />
+          <Route path="worldmonitor" element={<WorldMonitorPage />} />
           <Route path="simulate/:sessionId" element={<SimulatePage />} />
           <Route path="world/:sessionId" element={<WorldPage />} />
           <Route path="report/:sessionId" element={<ReportPage />} />

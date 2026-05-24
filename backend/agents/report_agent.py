@@ -1,5 +1,5 @@
 """
-ReportAgent — Generates the final prediction report and answers follow-up questions.
+ReportAgent — Generates the final strategy brief and answers follow-up questions.
 """
 from __future__ import annotations
 import json
@@ -8,18 +8,18 @@ from openai import AsyncOpenAI
 from config import settings
 
 _REPORT_PROMPT = """
-你是一位顶级预测分析师，拥有丰富的多智能体仿真经验。
+你是周大福海外市场战略情报总控 Agent，负责把多个企业专家 Agent 的研判汇总成管理层可用的每日战略简报。
 
-【预测目标】
+【情报任务】
 {goal}
 
-【仿真基础】
+【分析基础】
 文档摘要：{summary}
-智能体数量：{agent_count} 个
-仿真轮次：{rounds} 轮
-总互动次数：{interactions} 次
+专家 Agent 数量：{agent_count} 个
+会商轮次：{rounds} 轮
+总会商次数：{interactions} 次
 
-【智能体最终立场分布】
+【专家最终判断分布】
 {stance_distribution}
 
 【关键洞察摘要】
@@ -28,50 +28,56 @@ _REPORT_PROMPT = """
 【互动高亮】
 {interaction_highlights}
 
-基于以上多智能体群体仿真结果，请生成一份专业的预测分析报告。
+基于以上多 Agent 企业情报会商结果，请生成一份专业、可执行、可追溯的每日海外市场战略简报。
 
 报告结构（用 Markdown 格式，中文）：
-1. ## 执行摘要
-2. ## 仿真发现
-   - 群体立场演化
-   - 关键分歧点
-   - 涌现趋势
-3. ## 预测结论
-   - 主预测结果（明确方向和程度）
-   - 置信度（%）
-   - 预测时间跨度
-4. ## 风险因素
-   - 上行风险
-   - 下行风险
-5. ## 核心驱动力
-6. ## 操作建议
+1. # 周大福海外市场每日战略简报
+2. ## 今日总览
+   - 用3-5条概括最重要市场变化
+   - 标注机会、风险、待观察
+3. ## 高优先级预警
+   - 每条包含：市场、事件、影响、优先级、建议负责部门
+4. ## 各区域市场变化
+   - 东南亚、日韩、北美、中东与澳洲
+5. ## 竞品动态
+6. ## 产品与消费者趋势
+7. ## 渠道与电商机会
+8. ## 合规与供应链风险
+9. ## 建议行动清单
+   - 管理层、海外运营、产品团队、品牌团队、合规法务、供应链分别列出动作
+10. ## 信息来源与可信度
+   - 说明当前为公开资料/上传材料/模拟信号整合
+   - 每条结论给出可信度：高/中/低
 
-要求：数据驱动、立场客观、预测具体（避免模糊表述）。
+要求：
+- 必须围绕周大福业务特点：黄金首饰高占比、海外扩张、品牌转型、东南亚/日韩/北美/中东/澳洲、D-ONE、T MARK、Hearts On Fire、传承系列。
+- 不要写投资建议，不要预测黄金价格涨跌；要写企业市场情报、风险分级和行动建议。
+- 每条建议尽量指向负责部门，并说明为什么今天需要关注。
 """
 
 _CHAT_PROMPT = """
-你是仿真世界中的报告智能体（ReportAgent），已完成对「{goal}」的深度仿真分析。
+你是周大福海外市场战略情报系统中的战略简报总控 Agent，已完成对「{goal}」的多 Agent 情报会商。
 
 【已有分析报告摘要】
 {report_summary}
 
-【当前仿真状态】
+【当前会商状态】
 {sim_state}
 
 用户问题：{question}
 
-请基于仿真数据和报告内容，给出专业、有据可查的回答。
-如果用户想与某个具体智能体对话，请说明可以在智能体列表中选择。
+请基于简报、会商记录和周大福企业特点，给出专业、可执行、有证据意识的回答。
+回答应优先包含：涉及市场、影响判断、建议负责部门、下一步动作、是否需要补充验证来源。
 """
 
 _AGENT_CHAT_PROMPT = """
-你正在扮演仿真世界中的智能体。
+你正在扮演周大福海外市场战略情报系统中的企业专家 Agent。
 
 【你的身份】
 姓名：{name}
 职位：{role} @ {organization}
 性格：{personality}
-当前立场：{stance:.2f}（-1极悲观，+1极乐观）
+当前判断：{stance:.2f}（-1高度风险警惕，+1强机会判断）
 动机：{motivation}
 
 【你关于「{goal}」的最新洞察】
@@ -80,7 +86,7 @@ _AGENT_CHAT_PROMPT = """
 【用户问题】
 {question}
 
-请完全沉浸在角色中回答，体现你的立场、专业背景和性格特征。
+请完全沉浸在企业专家角色中回答，体现你的职能视角、专业背景、机会/风险判断和可执行建议。
 """
 
 
@@ -127,7 +133,7 @@ class ReportAgent:
                 model=settings.llm_model_name,
                 max_tokens=3000,
                 messages=[
-                    {"role": "system", "content": "你是专业预测分析师，用中文撰写深度分析报告。"},
+                    {"role": "system", "content": "你是周大福海外市场战略情报总控 Agent，用中文撰写管理层可用的战略简报。"},
                     {"role": "user", "content": prompt},
                 ],
                 temperature=0.5,
@@ -151,7 +157,7 @@ class ReportAgent:
             model=settings.llm_model_name,
             max_tokens=1000,
             messages=[
-                {"role": "system", "content": "你是分析报告智能体，基于已完成的仿真结果回答问题。"},
+                {"role": "system", "content": "你是周大福海外市场战略简报总控 Agent，基于已完成的情报会商回答问题。"},
                 {"role": "user", "content": prompt},
             ],
             temperature=0.6,
@@ -176,7 +182,7 @@ class ReportAgent:
             model=settings.llm_model_name,
             max_tokens=800,
             messages=[
-                {"role": "system", "content": f"你是仿真角色 {agent_dict['name']}，请完全入戏。"},
+                {"role": "system", "content": f"你是企业专家 Agent {agent_dict['name']}，请完全保持职能视角。"},
                 {"role": "user", "content": prompt},
             ],
             temperature=0.85,
@@ -195,10 +201,10 @@ class ReportAgent:
         bearish = sum(1 for s in stances if s < -0.2)
         neutral = len(stances) - bullish - bearish
         lines = [
-            f"平均立场：{avg:+.3f}",
-            f"看多（>0.2）：{bullish} 人",
-            f"中性（-0.2~0.2）：{neutral} 人",
-            f"看空（<-0.2）：{bearish} 人",
+            f"平均机会/风险判断：{avg:+.3f}",
+            f"机会导向（>0.2）：{bullish} 人",
+            f"中性观察（-0.2~0.2）：{neutral} 人",
+            f"风险警惕（<-0.2）：{bearish} 人",
         ]
         for a in agents:
             lines.append(f"  {a.name}（{a.role}）：{a.current_stance:+.2f}")

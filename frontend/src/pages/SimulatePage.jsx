@@ -1,15 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Cpu, Zap, Users, GitBranch, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react'
-import { createEventSource, getSession } from '../api/client'
+import { createEventSource, getSession, saveLastSessionId } from '../api/client'
 
 const STATUS_LABELS = {
   idle: '等待中',
   building_graph: '构建知识图谱',
-  generating_personas: '生成智能体人设',
-  simulating: '群体仿真进行中',
-  generating_report: '生成预测报告',
-  completed: '仿真完成',
+  generating_personas: '生成企业专家 Agent',
+  simulating: '战略情报会商中',
+  generating_report: '生成战略简报',
+  completed: '简报完成',
   error: '发生错误',
 }
 
@@ -74,7 +74,7 @@ function InteractionLog({ items }) {
           ))}
           {item.insight && (
             <div className="mt-2 text-slate-500 italic border-l-2 border-amber-500/20 pl-2">
-              💡 {item.insight?.slice(0, 80)}…
+              洞察：{item.insight?.slice(0, 80)}…
             </div>
           )}
         </div>
@@ -91,8 +91,14 @@ export default function SimulatePage() {
   const [interactions, setInteractions] = useState([])
   const [error, setError] = useState('')
   const esRef = useRef()
+  const statusRef = useRef('idle')
 
   useEffect(() => {
+    statusRef.current = session?.status || 'idle'
+  }, [session?.status])
+
+  useEffect(() => {
+    saveLastSessionId(sessionId)
     // Load initial state
     getSession(sessionId).then(setSession).catch(console.error)
 
@@ -103,8 +109,16 @@ export default function SimulatePage() {
     es.onmessage = e => {
       const event = JSON.parse(e.data)
 
-      if (event.type === 'init' || event.type === 'round_end') {
+      if (event.type === 'init') {
         setSession(event.data)
+        if (event.data?.error) setError(event.data.error)
+      } else if (event.type === 'round_end') {
+        setSession(s => s ? {
+          ...s,
+          current_round: event.data.round,
+          agents: event.data.agents,
+          progress: event.data.progress,
+        } : s)
       } else if (event.type === 'personas_ready') {
         setSession(s => s ? { ...s, agents: event.data.agents } : s)
       } else if (event.type === 'interaction') {
@@ -114,11 +128,15 @@ export default function SimulatePage() {
       } else if (event.type === 'completed') {
         setSession(s => s ? { ...s, status: 'completed', progress: 100, report: event.data.report, agents: event.data.agents } : s)
       } else if (event.type === 'error') {
-        setError(event.data.message)
-        setSession(s => s ? { ...s, status: 'error' } : s)
+        setError(event.data.message || event.data.detail || '会商连接或后端任务发生错误')
+        setSession(s => s ? { ...s, status: 'error', error: event.data.message } : s)
       }
     }
-    es.onerror = () => { /* SSE reconnects automatically */ }
+    es.onerror = () => {
+      if (!['completed', 'error'].includes(statusRef.current)) {
+        setError(prev => prev || '会商事件流连接中断，请确认后端服务仍在 http://localhost:5001 运行。')
+      }
+    }
 
     return () => es.close()
   }, [sessionId])
@@ -135,7 +153,7 @@ export default function SimulatePage() {
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             <Cpu size={24} className="text-amber-400" />
-            仿真控制台
+            战略情报会商控制台
           </h1>
           <p className="text-slate-500 text-sm mt-1">{session?.prediction_goal || '加载中...'}</p>
         </div>
@@ -144,12 +162,12 @@ export default function SimulatePage() {
             <button onClick={() => navigate(`/world/${sessionId}`)}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}>
-              <Users size={15} /> 智能体世界
+              <Users size={15} /> 专家 Agent
             </button>
             <button onClick={() => navigate(`/report/${sessionId}`)}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all"
               style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#000' }}>
-              查看报告 <ArrowRight size={15} />
+              查看战略简报 <ArrowRight size={15} />
             </button>
           </div>
         )}
@@ -179,7 +197,7 @@ export default function SimulatePage() {
         </div>
         {status === 'simulating' && session && (
           <div className="mt-2 text-xs text-slate-500 font-mono">
-            回合 {session.current_round} / {session.total_rounds}
+            会商轮次 {session.current_round} / {session.total_rounds}
           </div>
         )}
       </div>
@@ -195,9 +213,9 @@ export default function SimulatePage() {
         {/* Stats */}
         <div className="col-span-3 grid grid-cols-4 gap-4">
           {[
-            { icon: Users, label: '智能体', value: agents.length || '-', color: '#a78bfa' },
+            { icon: Users, label: '专家 Agent', value: agents.length || '-', color: '#a78bfa' },
             { icon: GitBranch, label: '知识图谱', value: session?.graph_data?.nodes?.length ? `${session.graph_data.nodes.length} 节点` : '-', color: '#60a5fa' },
-            { icon: Zap, label: '互动次数', value: interactions.length, color: '#fbbf24' },
+            { icon: Zap, label: '会商记录', value: interactions.length, color: '#fbbf24' },
             { icon: CheckCircle, label: '进度', value: `${progress}%`, color: '#10b981' },
           ].map((s, i) => (
             <div key={i} className="glass-card p-4 flex items-center gap-4">
@@ -215,7 +233,7 @@ export default function SimulatePage() {
         {/* Agents */}
         <div className="col-span-2">
           <h2 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-            <Users size={14} className="text-amber-400" /> 智能体立场实况
+            <Users size={14} className="text-amber-400" /> 专家判断实况
           </h2>
           {agents.length > 0 ? (
             <div className="grid grid-cols-2 gap-3">
@@ -223,7 +241,7 @@ export default function SimulatePage() {
             </div>
           ) : (
             <div className="glass-card p-8 text-center text-slate-500 text-sm">
-              {status === 'building_graph' || status === 'idle' ? '等待人设生成...' : '暂无智能体数据'}
+              {status === 'building_graph' || status === 'idle' ? '等待专家 Agent 生成...' : '暂无专家数据'}
             </div>
           )}
         </div>
@@ -231,11 +249,11 @@ export default function SimulatePage() {
         {/* Interaction log */}
         <div>
           <h2 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-            <Zap size={14} className="text-amber-400" /> 互动实况
+            <Zap size={14} className="text-amber-400" /> 会商实况
           </h2>
           {interactions.length > 0
             ? <InteractionLog items={interactions} />
-            : <div className="glass-card p-8 text-center text-slate-500 text-sm">等待互动开始...</div>
+            : <div className="glass-card p-8 text-center text-slate-500 text-sm">等待会商开始...</div>
           }
         </div>
       </div>

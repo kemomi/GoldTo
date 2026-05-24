@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Globe, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from 'lucide-react'
-import { getAgents, getGraph, getHistory } from '../api/client'
+import { getAgents, getGraph, getHistory, saveLastSessionId } from '../api/client'
 
 function StanceIcon({ value }) {
   if (value > 0.2) return <TrendingUp size={14} className="text-emerald-400" />
@@ -35,9 +35,9 @@ function AgentCard({ agent, onSelect, selected }) {
         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
       </div>
       <div className="flex justify-between text-xs text-slate-600">
-        <span>互动 {agent.interaction_count} 次</span>
-        <span style={{ color: color }}>
-          {stance > 0.2 ? '看多' : stance < -0.2 ? '看空' : '中性'}
+          <span>会商 {agent.interaction_count} 次</span>
+          <span style={{ color: color }}>
+          {stance > 0.2 ? '机会' : stance < -0.2 ? '风险' : '观察'}
         </span>
       </div>
     </div>
@@ -95,7 +95,7 @@ function AgentDetail({ agent, history }) {
       {/* Interaction history for this agent */}
       {myHistory.length > 0 && (
         <div className="mt-4">
-          <div className="text-xs text-slate-500 mb-2">互动记录（{myHistory.length} 条）</div>
+          <div className="text-xs text-slate-500 mb-2">会商记录（{myHistory.length} 条）</div>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {myHistory.slice(-5).map((h, i) => {
               const partner = h.agent_a_id === agent.id ? h.agent_b : h.agent_a
@@ -240,6 +240,7 @@ export default function WorldPage() {
   const [tab, setTab] = useState('agents')
 
   useEffect(() => {
+    saveLastSessionId(sessionId)
     getAgents(sessionId).then(d => { setAgents(d.agents); setSelectedAgent(d.agents[0]) }).catch(console.error)
     getGraph(sessionId).then(d => setGraphData(d.graph)).catch(console.error)
     getHistory(sessionId, { limit: 200 }).then(d => setHistory(d.history)).catch(console.error)
@@ -253,16 +254,16 @@ export default function WorldPage() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Globe size={24} className="text-amber-400" />
-        <h1 className="text-2xl font-bold text-white">智能体世界</h1>
+        <h1 className="text-2xl font-bold text-white">企业专家 Agent</h1>
       </div>
 
       {/* Summary stats */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
-          { label: '平均立场', value: `${avgStance > 0 ? '+' : ''}${avgStance.toFixed(3)}`, color: avgStance > 0 ? '#10b981' : '#f87171' },
-          { label: '看多阵营', value: `${bullish} 人`, color: '#10b981' },
-          { label: '看空阵营', value: `${bearish} 人`, color: '#f87171' },
-          { label: '中性', value: `${agents.length - bullish - bearish} 人`, color: '#94a3b8' },
+          { label: '平均判断', value: `${avgStance > 0 ? '+' : ''}${avgStance.toFixed(3)}`, color: avgStance > 0 ? '#10b981' : '#f87171' },
+          { label: '机会导向', value: `${bullish} 人`, color: '#10b981' },
+          { label: '风险警惕', value: `${bearish} 人`, color: '#f87171' },
+          { label: '中性观察', value: `${agents.length - bullish - bearish} 人`, color: '#94a3b8' },
         ].map((s, i) => (
           <div key={i} className="glass-card p-4 text-center">
             <div className="text-2xl font-bold mb-1" style={{ color: s.color }}>{s.value}</div>
@@ -273,7 +274,7 @@ export default function WorldPage() {
 
       {/* Tabs */}
       <div className="flex gap-6 border-b mb-6" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-        {[['agents', '智能体列表'], ['graph', '知识图谱']].map(([key, label]) => (
+        {[['agents', '专家列表'], ['graph', '知识图谱']].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={`pb-3 text-sm font-medium transition-all ${tab === key ? 'tab-active' : 'tab-inactive'}`}>
             {label}
@@ -294,7 +295,7 @@ export default function WorldPage() {
             {selectedAgent ? (
               <AgentDetail agent={selectedAgent} history={history} />
             ) : (
-              <div className="glass-card p-8 text-center text-slate-500 text-sm">点击智能体查看详情</div>
+              <div className="glass-card p-8 text-center text-slate-500 text-sm">点击专家 Agent 查看详情</div>
             )}
           </div>
         </div>

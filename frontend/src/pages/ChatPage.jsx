@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { MessageCircle, Send, Bot, User, ChevronDown } from 'lucide-react'
-import { sendChat, getAgents } from '../api/client'
+import { MessageCircle, Send, Bot, User, ChevronDown, Download } from 'lucide-react'
+import { sendChat, getAgents, getReport, getSession, getChatHistory, saveChatHistory, saveLastSessionId } from '../api/client'
+import { buildSessionMarkdown, downloadBlob, markdownToWordHtml } from '../utils/exporters'
 
 function ChatBubble({ message }) {
   const isUser = message.role === 'user'
@@ -34,7 +35,7 @@ function ChatBubble({ message }) {
 function AgentSelector({ agents, selected, onSelect }) {
   const [open, setOpen] = useState(false)
   const current = selected === 'report'
-    ? { name: 'ReportAgent', role: '分析报告智能体' }
+    ? { name: '战略简报总控', role: '管理层综合视角' }
     : agents.find(a => a.id === selected)
 
   return (
@@ -68,8 +69,8 @@ function AgentSelector({ agents, selected, onSelect }) {
               <Bot size={13} className="text-amber-400" />
             </div>
             <div className="text-left">
-              <div className="font-medium text-slate-200">ReportAgent</div>
-              <div className="text-xs text-slate-500">分析报告 · 综合视角</div>
+              <div className="font-medium text-slate-200">战略简报总控</div>
+              <div className="text-xs text-slate-500">管理层 · 综合视角</div>
             </div>
           </button>
           {/* Individual agents */}
@@ -102,27 +103,44 @@ function AgentSelector({ agents, selected, onSelect }) {
 export default function ChatPage() {
   const { sessionId } = useParams()
   const [agents, setAgents] = useState([])
+  const [session, setSession] = useState(null)
+  const [report, setReport] = useState('')
   const [selectedAgent, setSelectedAgent] = useState('report')
-  const [messages, setMessages] = useState([
-    {
+  const defaultGreeting = {
       role: 'assistant',
-      content: '你好！我是 ReportAgent，已完成本次群体智能仿真分析。你可以问我关于预测结论、风险因素、或选择与具体智能体对话。',
-      agentName: 'ReportAgent',
+      content: '你好！我是战略简报总控 Agent，已完成本次周大福海外市场情报会商。你可以追问中东优先级、竞品动作、金价影响、合规风险，或选择具体专家 Agent 对话。',
+      agentName: '战略简报总控',
       agentInitial: 'R',
       ts: Date.now(),
     }
-  ])
+  const [messages, setMessages] = useState(() => {
+    const saved = getChatHistory(sessionId)
+    return saved.length ? saved : [defaultGreeting]
+  })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef()
 
   useEffect(() => {
-    getAgents(sessionId).then(d => setAgents(d.agents)).catch(console.error)
+    saveLastSessionId(sessionId)
+    Promise.all([
+      getAgents(sessionId),
+      getSession(sessionId),
+      getReport(sessionId).catch(() => ({ report: '' })),
+    ]).then(([a, s, r]) => {
+      setAgents(a.agents)
+      setSession(s)
+      setReport(r.report || '')
+    }).catch(console.error)
   }, [sessionId])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  useEffect(() => {
+    saveChatHistory(sessionId, messages)
+  }, [sessionId, messages])
 
   const handleSend = async () => {
     const msg = input.trim()
@@ -141,7 +159,7 @@ export default function ChatPage() {
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: response,
-        agentName: agent?.name || 'ReportAgent',
+        agentName: agent?.name || '战略简报总控',
         agentInitial: agent?.name?.[0] || 'R',
         ts: Date.now(),
       }])
@@ -158,17 +176,40 @@ export default function ChatPage() {
   }
 
   const QUICK_QUESTIONS = [
-    '你对这个预测的信心有多高？',
-    '最大的下行风险是什么？',
-    '有哪些关键信号需要关注？',
-    '请给出具体的操作建议',
+    '为什么中东市场优先级升高？',
+    '哪些竞品动作最值得关注？',
+    '金价上涨对产品组合有什么影响？',
+    '今天哪些部门需要行动？',
   ]
+
+  const exportMarkdown = () => {
+    const content = buildSessionMarkdown({ session, report, messages })
+    downloadBlob(content, `ctf-strategy-chat-${sessionId}.md`, 'text/markdown;charset=utf-8')
+  }
+
+  const exportWord = () => {
+    const content = buildSessionMarkdown({ session, report, messages })
+    const html = markdownToWordHtml(content, `CTF Strategy Radar ${sessionId}`)
+    downloadBlob(html, `ctf-strategy-chat-${sessionId}.doc`, 'application/msword;charset=utf-8')
+  }
 
   return (
     <div className="p-6 max-w-5xl mx-auto flex flex-col" style={{ height: 'calc(100vh - 0px)' }}>
-      <div className="flex items-center gap-3 mb-4">
-        <MessageCircle size={24} className="text-amber-400" />
-        <h1 className="text-2xl font-bold text-white">深度对话</h1>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <MessageCircle size={24} className="text-amber-400" />
+          <h1 className="text-2xl font-bold text-white">追问验证</h1>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={exportMarkdown} className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}>
+            <Download size={14} /> Markdown
+          </button>
+          <button onClick={exportWord} className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}>
+            <Download size={14} /> Word
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-4 gap-4 flex-1 min-h-0">
@@ -234,7 +275,7 @@ export default function ChatPage() {
                   maxHeight: 120,
                   minHeight: 48,
                 }}
-                placeholder="输入问题，与智能体深度交流..."
+                placeholder="输入问题，追问简报结论、来源可信度或部门行动..."
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}

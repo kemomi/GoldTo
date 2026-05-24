@@ -10,6 +10,31 @@ export const createSession = () => api.post('/sessions').then(r => r.data)
 export const getSession = id => api.get(`/sessions/${id}`).then(r => r.data)
 export const listSessions = () => api.get('/sessions').then(r => r.data)
 
+// ── Local session history ────────────────────────────────────────────────────
+const RECENT_SESSION_KEY = 'ctf-radar:last-session'
+const CHAT_HISTORY_KEY_PREFIX = 'ctf-radar:chat:'
+
+export const saveLastSessionId = sessionId => {
+  if (sessionId) localStorage.setItem(RECENT_SESSION_KEY, sessionId)
+}
+
+export const getLastSessionId = () =>
+  localStorage.getItem(RECENT_SESSION_KEY)
+
+export const getChatHistory = sessionId => {
+  try {
+    return JSON.parse(localStorage.getItem(`${CHAT_HISTORY_KEY_PREFIX}${sessionId}`) || '[]')
+  } catch {
+    return []
+  }
+}
+
+export const saveChatHistory = (sessionId, messages) => {
+  if (sessionId) {
+    localStorage.setItem(`${CHAT_HISTORY_KEY_PREFIX}${sessionId}`, JSON.stringify(messages))
+  }
+}
+
 // ── Upload & Simulate ─────────────────────────────────────────────────────────
 export const uploadSeed = (sessionId, formData) =>
   api.post(`/sessions/${sessionId}/upload`, formData, {
@@ -31,6 +56,16 @@ export const getGraph = sessionId =>
 
 export const getHistory = (sessionId, params = {}) =>
   api.get(`/sessions/${sessionId}/history`, { params }).then(r => r.data)
+
+// ── WorldMonitor ──────────────────────────────────────────────────────────────
+export const fetchWorldMonitorSources = () =>
+  api.get('/worldmonitor/sources').then(r => r.data)
+
+export const filterWorldMonitor = () =>
+  api.post('/worldmonitor/filter').then(r => r.data)
+
+export const createSessionFromWorldMonitor = payload =>
+  api.post('/sessions/from-worldmonitor', payload).then(r => r.data)
 
 // ── Chat ──────────────────────────────────────────────────────────────────────
 export const sendChat = (sessionId, message, agentId = null) =>
